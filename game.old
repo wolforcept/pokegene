@@ -1,0 +1,675 @@
+const colors = {
+    'normal': ['d5d5d5', '000000BB'],
+    'grass': ['5fdb83', '000000BB'],
+    'poison': ['c276cd', '000000BB'],
+    'fire': ['ff7100', '000000BB'],
+    'flying': ['5b73db', '000000BB'],
+    'water': ['60ecff', '000000BB'],
+    'bug': ['d1ff00', '000000BB'],
+    'electric': ['ffe600', '000000BB'],
+    'ground': ['c77e64', '000000BB'],
+    'fairy': ['ffa0df', '000000BB'],
+    'fighting': ['ff175c', '000000BB'],
+    'psychic': ['ff2424', '000000BB'],
+    'rock': ['c1aa46', '000000BB'],
+    'steel': ['bfdbda', '000000BB'],
+    'ice': ['91fff8', '000000BB'],
+    'ghost': ['aa6fbbb8', 'FFFFFF'],
+    'dragon': ['009aff', '000000BB'],
+    'dark': ['161520', 'FFFFFFBB'],
+}
+const types = Object.keys(colors);
+var pokemons = {}, typesByPokemon, pokemonsByType, evolutions, cookieData, manaDisplay, manaBar, lastDivGrabbed;
+
+async function loadPokemonStaticData(nr) {
+    console.log(`loading pokemon nr ${nr}...`)
+    const response = await fetch(`./pokemons/${nr}.json`)
+    const json = await response.json()
+    console.log(`loading pokemon ${nr} done`)
+    return {
+        nr, name: json.name, types: typesByPokemon[nr],
+        speciesUrl: json.species.url
+    }
+}
+
+async function loadStaticData() {
+    console.log("loading static data...")
+    console.log("loading types...")
+    await fetch('./typesByPokemon.json')
+        .then((response) => response.json())
+        .then((json) => typesByPokemon = json);
+    // console.log(typesByPokemon)
+    await fetch('./pokemonsByType.json')
+        .then((response) => response.json())
+        .then((json) => pokemonsByType = json);
+    await fetch('./evolutionsByPokemon.json')
+        .then((response) => response.json())
+        .then((json) => evolutionsByPokemon = json);
+    // console.log(pokemonsByType)
+    console.log("loading static data finished")
+
+    // evolutions = [];
+    // for (let i = 1; i <= 541; i++)
+    //     await loadEvolutionChain(i);
+    // downloadFile(evolutions)
+    // loadEvolutionChain(26);
+}
+
+// function downloadFile(storageObj) {
+//     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(storageObj));
+//     var dlAnchorElem = document.getElementById('downloadAnchorElem');
+//     dlAnchorElem.setAttribute("href", dataStr);
+//     dlAnchorElem.setAttribute("download", "scene.json");
+//     dlAnchorElem.click();
+// }
+
+async function getEvolution(chain) {
+    const nr = (await (await fetch(chain.species.url)).json()).id;
+    // console.log({ nr, chain })
+    const evolvesTo = [];
+    for (let i = 0; i < chain.evolves_to.length; i++) {
+        const possibleNext = await getEvolution(chain.evolves_to[i]);
+        // console.log({ possibleNext })
+        if (possibleNext !== undefined) evolvesTo.push(possibleNext);
+    }
+    // console.log({ nr, evolvesTo: JSON.stringify(evolvesTo) })
+    evolutions[nr] = evolvesTo;
+    return nr;
+}
+
+async function loadEvolutionChain(id) {
+    // const pokemon = await loadPokemon(nr);
+    // const species = await (await fetch(pokemon.speciesUrl)).json();
+    const chain = (await (await fetch(`https://pokeapi.co/api/v2/evolution-chain/${id}/`)).json()).chain;
+    getEvolution(chain)
+    // const raw = await (await fetch(`https://pokeapi.co/api/v2/evolution-chain/${nr}/`)).json();
+    // console.log({ evol: raw.chain });
+}
+
+async function cookieData_load() {
+    const loaded = localStorage.getItem("saved_data");
+    cookieData = JSON.parse(loaded);
+}
+
+function cookieData_save() {
+    Object.keys(pokemons).forEach((id) => {
+        const pokemon = pokemons[id];
+        if (pokemon.card) {
+            const pos = pokemon.card.position();
+            pokemon.x = pos.left;
+            pokemon.y = pos.top;
+            pokemon.isBall = pokemon.card.hasClass('ball');
+        }
+    })
+    cookieData.pokemon = pokemons;
+    localStorage.setItem("saved_data", JSON.stringify(cookieData));
+}
+
+function cookieData_clear() {
+    localStorage.removeItem("saved_data");
+    location.reload();
+}
+
+function cookieData_addPokemon(nr) {
+    const id = crypto.randomUUID();
+    const pokemon = { id, nr, timer: 0, level: 1, x: 0, y: 0, tier: 1 };
+    makePokemonCard(pokemon);
+    cookieData.pokemon[id] = pokemon;
+    cookieData_save();
+    return pokemon;
+}
+
+// function getMaxMana(type) {
+//     const research = (cookieData.research[type] ?? 0);
+//     return Math.pow(2, 1 + research) * 20;
+//     // const str = max + "";
+//     // let str2 = str.substring(0, 2);
+//     // for (let i = 2; i < str.length; i++) str2 += '0';
+//     //  + "" + str.substring(2, str.length).replaceAll(/\d/, '0');
+//     // return Number(str2);
+// }
+
+function getMaxPokemonTimer(level) {
+    return Math.floor(5 * Math.pow(level, 0.66666));
+}
+
+function cookieData_addMana(type, amount = 1) {
+    // const v = getMaxMana(type);
+    if (!cookieData.mana[type])
+        cookieData.mana[type] = 0;
+    cookieData.mana[type] += amount;
+    // if (cookieData.mana[type] > v)
+    //     cookieData.mana[type] = v;
+    if (cookieData.mana[type] < 0)
+        cookieData.mana[type] = 0;
+    cookieData_save();
+}
+
+function cookieData_increasePokemonTimer(pokemon, amount = 1) {
+    if (pokemon.timer === undefined)
+        pokemon.timer = 0;
+    pokemon.timer += amount;
+
+    const max = getMaxPokemonTimer(pokemon.level);
+    if (pokemon.timer > max) pokemon.timer = max;
+    updateFilled(pokemon);
+}
+
+function cookieData_tryExtract(pokemon) {
+    const maxTimer = getMaxPokemonTimer(pokemon.level);
+
+    if (pokemon.timer >= maxTimer) {
+        pokemon.timer = 0;
+        const type = typesByPokemon[pokemon.nr][0];
+        createManaGainAnimation(pokemon.card.position(), type);
+        cookieData_addMana(type);
+    }
+
+    updateFilled(pokemon);
+    cookieData_save();
+    updateManaBar();
+}
+
+function cookieData_trySearch() {
+    cookieData_addPokemon(1);
+}
+
+function cookieData_tryJoin(index1, index2) {
+    const p1 = cookieData.pokemon[index1];
+    const p2 = cookieData.pokemon[index2];
+    console.log({ nr1: p1.tier, nr2: p2.tier })
+    if (p1.nr === p2.nr && p1.tier === p2.tier) {
+        p1.tier++;
+        cookieData_removePokemon(index2);
+    }
+    cookieData_save();
+}
+
+function cookieData_removePokemon(index) {
+    pokemonCards[index].remove();
+    cookieData.pokemon.splice(index, 1);
+    pokemonCards.splide(index, 1);
+    cookieData_save();
+}
+
+// function cookieData_convertMana(type) {
+//     if (cookieData.mana[type] <= 0) return;
+//     if (cookieData.mana['normal'] >= getMaxMana(type)) return;
+//     cookieData_addMana(type, -1);
+//     cookieData_addMana('normal');
+// }
+
+// function cookieData_investMana(type) {
+//     if (cookieData.mana[type] <= 0) return;
+//     cookieData_addMana(type, -1);
+// }
+
+// function cookieData_researchMana(type) {
+//     if (cookieData.mana[type] !== getMaxMana(type)) return;
+//     // cookieData_addMana(type, -1);
+//     cookieData.mana[type] = 0;
+//     cookieData.research[type] = 1 + (cookieData.research[type] ?? 0);
+//     cookieData_save();
+// }
+
+$(async () => {
+    await loadStaticData();
+    await cookieData_load();
+    if (!cookieData || !cookieData.pokemon || cookieData.pokemon.length === 0) {
+        cookieData = newData();
+        cookieData_save();
+        await showPickStarter();
+    } else {
+        startGame();
+    }
+    // let dx = 32;
+    // ['grass', 'grass', 'poison', 'fire', 'flying', 'water', 'bug', 'normal', 'electric', 'ground', 'fairy', 'fighting', 'psychic', 'rock', 'steel', 'ice', 'ghost', 'dragon', 'dark']
+    //     .forEach(type => {
+    //         addCrystalBall(dx, 32, type)
+    //         dx += 64
+    //     });
+
+    // for (let nr = 1; nr < 10; nr++) {
+    //     addPokemonCard(64, dx, nr)
+    //     dx += 100
+    // }
+})
+
+function startGame() {
+
+    pokemonCards = [];
+
+    manaBar = createManaBar();
+    updateManaBar();
+    // manaDisplay = createManaDisplay();
+
+    console.log("starting game");
+
+    let dy = 0;
+    Object.keys(pokemons).forEach(async (id) => {
+        const pokemon = pokemons[id];
+        makePokemonCard(pokemon);
+        dy += 110;
+    });
+
+    const timer = setInterval(step, 2000);
+}
+
+
+function createManaBar() {
+    const div = $('<div id="manaBar"></div>')
+    $('body').append(div);
+    // div.draggable();
+    div.on('click', cookieData_trySearch);
+    return div;
+}
+
+function updateManaBar() {
+    const mana = cookieData.mana;
+    let sum = 0;
+    types.forEach(type => sum += mana[type] ?? 0);
+    let percentPrev = 0;
+    let rollingSum = 0;
+    let gradientString = '';
+    types.forEach(type => {
+        if (mana[type] && mana[type] > 0) {
+            rollingSum += mana[type];
+            const color = colors[type][0];
+            const percent = Math.floor(100 * rollingSum / sum);
+            gradientString += `, #${color} ${percentPrev}%, #${color} ${percent}%`;
+            percentPrev = percent;
+        }
+    })
+    const gradient = `linear-gradient(90deg${gradientString})`;
+    console.log(gradient)
+    manaBar.css('background', gradient);
+    // manaBar.css('width', '500px');
+}
+
+function createShop() {
+
+}
+
+async function showPickStarter() {
+    console.log("showing starter")
+    const div = $(`<div class="pickStarter">Choose Your Starter:</div>`)
+    let chosen = null;
+    const appendStarter = (pokemon) => {
+        const pokemonDiv = $(`<div class="starter"></div>`)
+        const pokemonName = $(`<div class="name">${pokemon.name}</div>`)
+        const pokemonImage = $(`<img src="assets/pokemons/${pokemon.nr}.png">`)
+        // const starterButtonWrapper = $(`<div class="starterButtonWrapper"></div>`)
+        pokemonDiv.append(pokemonName);
+        pokemonDiv.append(pokemonImage);
+        // pokemonDiv.append(starterButtonWrapper);
+        div.append(pokemonDiv);
+
+        // $(document).on('mousedown', () => {
+        //     mouseDown = true;
+        // });
+
+        // $(document).on('mouseup', () => {
+        //     mouseDown = false;
+        // });
+        pokemonDiv.on("click", () => {
+            $('.starter').hide();
+            pokemonDiv.show();
+            chosen = pokemon.nr;
+            confirmButton.show();
+            cancelButton.show();
+            // starterButtonWrapper.append($(`<div>CHOOSE ME</div>`))
+        })
+    }
+    appendStarter(await loadPokemonStaticData(1))
+    appendStarter(await loadPokemonStaticData(4))
+    appendStarter(await loadPokemonStaticData(7))
+    appendStarter(await loadPokemonStaticData(25))
+
+    const confirmButton = $(`<div class="starterButton starterConfirm">Confirm</div>`);
+    const cancelButton = $(`<div class="starterButton starterCancel">Cancel</div>`);
+    div.append(confirmButton);
+    div.append(cancelButton);
+    confirmButton.hide();
+    cancelButton.hide();
+
+    cancelButton.on('click', () => {
+        chosen = null;
+        $('.starter').show();
+        confirmButton.hide();
+        cancelButton.hide();
+    });
+
+    confirmButton.on('click', () => {
+        cookieData_addPokemon(chosen);
+        $('.pickStarter').hide();
+        startGame();
+    });
+
+    $("body").append(div);
+}
+
+function newData() {
+    return {
+        pokemon: [],
+        mana: {},
+        research: {}
+    }
+}
+
+function makePokemonCard(pokemon) {
+    loadPokemonStaticData(pokemon.nr).then(
+        pokemonStaticData => {
+
+            const type1 = pokemonStaticData.types[0];
+            const type2 = pokemonStaticData.types[1];
+
+            // name
+            const name = $(`<div class="pokemonName name">${pokemonStaticData.name}</div>`);
+
+            // number
+            const number = $(`<div class="number">#${pokemon.nr}</div>`);
+
+            // types
+            const makeType = (type) => {
+                const name = $(`<div class="name">${type}</div>`)
+                const image = $(`<img class="typeImage" src="assets/types/${type}.png" class="typeImage">`);
+
+                const div = $(`<div class="type"></div>`);
+                div.append(name);
+                div.append(image);
+                return div;
+            };
+            const types = [];
+            if (type1) types.push(makeType(type1));
+            if (type2) types.push(makeType(type2));
+            // if (type1) types.push($(`<img src="assets/types/${type1}.png" class="typeImage">`));
+            // if (type2) types.push($(`<img src="assets/types/${type2}.png" class="typeImage">`));
+            const typesDiv = $(`<div class="typesDiv"></div>`);
+            types.forEach(t => typesDiv.append(t));
+
+            // pokemon image
+            const pokemonImage = $(`<img class="pokemonImage" src="assets/pokemons/${pokemon.nr}.png" class="image1">`)
+
+            const topDiv = $(`<div class="topDiv"></div>`);
+            topDiv.append(name);
+            topDiv.append(number);
+
+            const botDiv = $(`<div class="botDiv"></div>`);
+            botDiv.append(typesDiv);
+            botDiv.append(pokemonImage);
+
+            const div = $(`<div class="card"></div>`);
+            div.css('background-color', "#" + colors[type1][0]);
+            div.append(topDiv);
+            div.append(botDiv);
+            div.attr('id', pokemon.id);
+            pokemon.card = div;
+            // div.append(pokemonImage);
+
+            const toggleBall = () => {
+                if (div.hasClass('card')) {
+                    div.removeClass('card');
+                    div.addClass('ball');
+                } else if (div.hasClass('ball')) {
+                    div.removeClass('ball');
+                    div.addClass('card');
+                }
+                updateFilled(pokemon)
+            }
+
+            const onClick = () => {
+                cookieData_tryExtract(pokemon);
+                // if ((now - lastClick) < 200) ;
+                // cookieData_addMana(index, 1);
+                // lastClick = now;
+            };
+
+            let lastClick = 99999999999999;
+            let lastPos;
+            const onMouseDown = () => {
+                lastClick = Date.now();
+                lastPos = div.position();
+                lastDivGrabbed?.css('z-index', '10');
+                div.css('z-index', '100');
+                lastDivGrabbed = div;
+            }
+            const onMouseUp = () => {
+                const now = Date.now();
+                let pos = div.position();
+                if (pos && lastPos) {
+                    let maxDiff = Math.max(Math.abs(pos.left - lastPos.left), Math.abs(pos.top - lastPos.top));
+                    if (now - lastClick > 1000 && maxDiff < 4) toggleBall();
+                }
+                lastClick = now;
+            }
+
+            const onDrag = (a, b) => {
+                // console.log(b.position)
+            }
+
+            const onDrop = (a, b) => {
+                if (a.target)
+                    cookieData_tryJoin(index, Number($(a.target).attr('pokemonIndex')));
+            }
+
+            addToBody(pokemon.x, pokemon.y, div, (div) => {
+                div.click(onClick);
+                div.on('mousedown', onMouseDown);
+                div.on('mouseup', onMouseUp);
+                if (pokemon.isBall)
+                    toggleBall();
+                updateFilled(pokemon);
+            }, onDrag, onDrop);
+
+        }
+    )
+
+}
+
+function updateFilled(pokemon) {
+
+    const card = pokemon.card;
+    console.log({ nr: pokemon.nr, card })
+    const types = typesByPokemon[pokemon.nr];
+    const type = types[0];
+    const color = colors[type];
+    const n = 100 * pokemon.timer / getMaxPokemonTimer(pokemon.level);
+
+    if (card.hasClass('card')) {
+        card.css('background', `#${color[0]}`)
+        card.find('.pokemonName').css('background', `linear-gradient(180deg,  #${color[0]} 85%, transparent 86%), 
+                                                     linear-gradient(90deg, white ${n}%, rgb(0,0,0,0.2) ${n + 1}%)`
+        )
+    } else
+        card.css('background', `radial-gradient(closest-side, #${color[0]} 89%, transparent 90% 100%),
+    conic-gradient(white ${n}%, #${color[0]} 0)`)
+    // card.css("background", `radial-gradient(closest-side, #${color} 79%, transparent 80% 100%), conic-gradient(white ${n}%, transparent 0)`)
+}
+
+// function createManaDisplay() {
+//     let currentAction = null;
+
+//     const div = $(`<div id="manaDisplay"></div>`);
+//     // const displays = [];
+//     let line = $(`<div class="manaDisplayLine"></div>`);
+//     let n = 0;
+//     types.forEach(type => {
+
+//         const display = $(`<div class="manaDisplay"></div>`);
+//         const displayImg = $(`<img src="./assets/types/${type}.png" height="32px">`);
+//         const displayText = $(`<div class="manaDisplayText" id="manaDisplay_${type}">0</div>`);
+//         display.append(displayImg);
+//         display.append(displayText);
+
+//         display.on('click', () => {
+//             if (currentAction === "convert") {
+//                 cookieData_convertMana(type);
+//                 updateManaDisplay();
+//             }
+
+//             if (currentAction === "invest") {
+//                 cookieData_investMana(type);
+//                 updateManaDisplay();
+//             }
+
+//             if (currentAction === "research") {
+//                 cookieData_researchMana(type);
+//                 updateManaDisplay();
+//             }
+//         })
+
+//         line.append(display);
+//         n++;
+//         if (n === 3) {
+//             div.append(line);
+//             n = 0;
+//             line = $(`<div class="manaDisplayLine"></div>`);
+//         }
+
+//         // displays.push(display);
+//     })
+
+//     const researchButton = $(`<div class="button off">Research</div>`);
+//     researchButton.css('background-color', 'rgb(200, 80, 0)');
+//     researchButton.on('click', () => {
+//         currentAction = "research";
+//         $("#manaDisplay .button").addClass('off');
+//         researchButton.removeClass('off');
+//     });
+
+//     const investButton = $(`<div class="button off">Invest</div>`);
+//     investButton.css('background-color', 'rgb(44, 161, 40)');
+//     investButton.on('click', () => {
+//         currentAction = "invest";
+//         $("#manaDisplay .button").addClass('off');
+//         investButton.removeClass('off');
+//     });
+
+//     const convertButton = $(`<div class="button off">Convert</div>`);
+//     convertButton.css('background-color', 'rgb(65, 65, 200)');
+//     convertButton.on('click', () => {
+//         currentAction = "convert";
+//         $("#manaDisplay .button").addClass('off');
+//         convertButton.removeClass('off');
+//     });
+
+//     line = $(`<div class="manaDisplayLine"></div>`);
+//     line.append(investButton);
+//     line.append(convertButton);
+//     line.append(researchButton);
+//     div.append(line);
+
+//     manaDisplay = div;
+//     // manaDisplay.displays = displays;
+//     $(`body`).append(div);
+//     div.draggable();
+//     updateManaDisplay();
+//     investButton.click();
+// }
+
+// function updateManaDisplay() {
+//     types.forEach(type => {
+//         $('#manaDisplay_' + type).html(cookieData.mana[type])
+//     });
+// }
+
+// function addCrystalBall(x, y, type) {
+
+//     const hover = $(`<div class="hover">${type} crystal</div>`)
+//     hover.css('background-color', `#${colors[type][0]}`)
+//     hover.css('color', `#${colors[type][1]}`)
+//     // hover.css('border', `5px solid #${colors[type][0]}`)
+
+//     // const img1 = $(`<img src="assets/types/${type}.png" class="image1">`)
+//     // const img2 = $(`<img src="assets/types/${type}.png" class="image2">`)
+
+//     // hover.append(img1)
+//     // hover.append(img2)
+//     addBall(x, y, 'crystals/' + type, hover)
+// }
+
+function addToBody(x, y, div, callback, drag, drop) {
+    div.css('left', x)
+    div.css('top', y)
+    $("body").append(div)
+    div.css('position', 'absolute')
+    div.draggable({ drag });
+    div.droppable({ drop });
+    if (callback) callback(div);
+    return div;
+}
+
+// function addBall(x, y, path, hover) {
+//     const img1 = $(`<div class="image"></div>`)
+//     img1.css('background-image', `url(assets/${path}.png)`)
+
+//     const div = $(`<div class="ball"></div>`)
+//     div.append(img1)
+//     div.append(hover)
+//     div.css('left', x)
+//     div.css('top', y)
+//     dragElement(div, 100);
+//     $("body").append(div)
+
+//     return div;
+// }
+
+// function dragElement(jelem) {
+//     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+//     // jelem.find('.image')[0].onmousedown = dragMouseDown;
+//     jelem.onmousedown = dragMouseDown;
+//     var elem = jelem;
+
+//     function dragMouseDown(e) {
+//         e = e || window.event;
+//         e.preventDefault();
+//         // get the mouse cursor position at startup:
+//         pos3 = e.clientX;
+//         pos4 = e.clientY;
+//         document.onmouseup = closeDragElement;
+//         // call a function whenever the cursor moves:
+//         document.onmousemove = elementDrag;
+//     }
+
+//     function elementDrag(e) {
+//         e = e || window.event;
+//         e.preventDefault();
+//         // calculate the new cursor position:
+//         pos1 = pos3 - e.clientX;
+//         pos2 = pos4 - e.clientY;
+//         pos3 = e.clientX;
+//         pos4 = e.clientY;
+//         // set the element's new position:
+//         elem.style.top = Math.max(0, (elem.offsetTop - pos2)) + "px";
+//         elem.style.left = Math.max(0, (elem.offsetLeft - pos1)) + "px";
+//     }
+
+//     function closeDragElement() {
+//         /* stop moving when mouse button is released:*/
+//         document.onmouseup = null;
+//         document.onmousemove = null;
+//     }
+// }
+
+// function unpackPokemon(pokemon) {
+
+// }
+
+function createManaGainAnimation(pos, type) {
+    const anim = $(`<img class="anim_manaGain" src="./assets/types/${type}.png">`);
+    anim.css({ top: pos.top + 32, left: pos.left + 32 });
+    $(`body`).append(anim);
+    setTimeout(() => {
+        anim.remove();
+    }, 1000);
+
+}
+
+function step() {
+    Object.keys(pokemons).forEach((id) => {
+        const pokemon = pokemons[id]
+        cookieData_increasePokemonTimer(pokemon);
+    })
+    cookieData_save();
+}

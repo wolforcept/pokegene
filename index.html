@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>PokeGene</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <script src="lib/jquery-3.7.1.min.js"></script>
+    <script src="lib/jquery-ui.min.js"></script>
+    <script src="lib/jquery.ui.touch-punch.min.js"></script>
+    <script src="scripts/game.js"></script>
+</head>
+
+<body class="starting">
+    <script>
+        start();
+        setTimeout(() => {
+            $("body").removeClass("starting");
+        }, 1000);
+    </script>
+</body>
+
+</html>
