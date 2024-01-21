@@ -123,11 +123,11 @@ class Main {
         });
         this.manaPanel.update();
         this.saveAll();
-        if (this.explorations === 0) {
-            this.explore();
-            this.explorations++;
-        }
-        console.log(this.manaPanel.mana);
+        // if (this.explorations === 0) {
+        //     this.explore();
+        //     this.explorations++;
+        // }
+        // console.log(this.manaPanel.mana);
     }
 
     explore() {
