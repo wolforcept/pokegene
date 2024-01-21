@@ -63,7 +63,6 @@ var Main = /** @class */ (function () {
     function Main() {
         var _this = this;
         this.pokemon = [];
-        this.explorations = 0;
         this.load()
             .then(function (loadedData) {
             // const prevolutions = [];
@@ -153,7 +152,6 @@ var Main = /** @class */ (function () {
     };
     Main.prototype.joinPokemon = function (pokemon1, id2) {
         var pokemon2 = this.pokemon.find(function (x) { return x.card.id === id2; });
-        console.log({ pokemon1: pokemon1, pokemon2: pokemon2 });
         if (pokemon1 && pokemon2 && pokemon1.nr === pokemon2.nr && pokemon1.level === pokemon2.level) {
             // pokemon2.remove();
             this.pokemon.splice(this.pokemon.indexOf(pokemon2), 1);
@@ -175,13 +173,14 @@ var Main = /** @class */ (function () {
         this.manaPanel.update();
         this.stepperId = setInterval(function () { return _this.step(); }, 1000);
     };
+    // explorations = 0
     Main.prototype.step = function () {
-        // this.pokemon.forEach((pokemon) => {
-        //     if (pokemon.card.isOpened)
-        //         pokemon.step();
-        // });
-        // this.manaPanel.update();
-        // this.saveAll();
+        this.pokemon.forEach(function (pokemon) {
+            if (pokemon.card.isOpened)
+                pokemon.step();
+        });
+        this.manaPanel.update();
+        this.saveAll();
         // if (this.explorations === 0) {
         //     this.explore();
         //     this.explorations++;
@@ -212,7 +211,7 @@ var Main = /** @class */ (function () {
         this.manaPanel.removeAllMana();
     };
     Main.prototype.getRandomPokemon = function () {
-        var nr = 1 + Math.abs(Math.floor(this.gaussianRandom(this.pokemon.length / 3, 10)));
+        var nr = 1 + Math.abs(Math.floor(this.gaussianRandom(this.manaPanel.level / 5, 10 + this.manaPanel.level / 10)));
         while (StaticData.prevolutionsByPokemon[nr] != null)
             nr--;
         return nr;
@@ -243,10 +242,11 @@ var ManaPanel = /** @class */ (function () {
         if (loadedData) {
             PokeTypes.forEach(function (type) { return _this.mana[type] = loadedData.mana[type]; });
             this.level = loadedData.level;
+            console.log(this.level);
         }
     }
     Object.defineProperty(ManaPanel.prototype, "nextTarget", {
-        get: function () { return Math.floor((4 + this.level * this.level) / 2); },
+        get: function () { return Math.floor((4 + Math.pow(this.level, 1.2)) / 2); },
         enumerable: false,
         configurable: true
     });

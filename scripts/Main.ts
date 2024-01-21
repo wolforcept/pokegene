@@ -88,7 +88,6 @@ class Main {
 
     joinPokemon(pokemon1: Pokemon, id2: string) {
         const pokemon2 = this.pokemon.find(x => x.card.id === id2);
-        console.log({ pokemon1, pokemon2 })
         if (pokemon1 && pokemon2 && pokemon1.nr === pokemon2.nr && pokemon1.level === pokemon2.level) {
             // pokemon2.remove();
             this.pokemon.splice(this.pokemon.indexOf(pokemon2), 1);
@@ -111,11 +110,10 @@ class Main {
         this.manaPanel.init();
         this.manaPanel.update();
 
-        console.log("test")
         this.stepperId = setInterval(() => this.step(), 1000);
     }
 
-    explorations = 0
+    // explorations = 0
     step() {
         this.pokemon.forEach((pokemon) => {
             if (pokemon.card.isOpened)
@@ -151,7 +149,7 @@ class Main {
     }
 
     getRandomPokemon(): number {
-        let nr = 1 + Math.abs(Math.floor(this.gaussianRandom(this.pokemon.length / 3, 10)));
+        let nr = 1 + Math.abs(Math.floor(this.gaussianRandom(this.manaPanel.level / 5, 10 + this.manaPanel.level / 10)));
         while (StaticData.prevolutionsByPokemon[nr] != null)
             nr--;
         return nr;
