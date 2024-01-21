@@ -24,8 +24,21 @@ class Pokemon {
 
                 if (this.timer >= this.maxTimer) {
                     this.timer = 0;
-                    this.card.createManaGainAnimation(this.mainType);
-                    this.main.manaPanel.addMana(this.mainType, this.level);
+                    const probs = [];
+                    if (this.level < 5) {
+                        for (let i = 0; i < 5 - this.level; i++)
+                            probs.push('normal')
+                    }
+                    if (this.level > 7)
+                        this.types.forEach(t => probs.push(t))
+                    else
+                        probs.push(this.mainType)
+                    const finalType = probs[Math.floor(Math.random() * probs.length)]
+                    console.log(probs, finalType)
+
+                    this.main.manaPanel.addMana(finalType, this.level);
+                    this.card.createManaGainAnimation(finalType);
+
                     // TODO cookieData_addMana(type);
                     this.card.updateFilled();
                 }

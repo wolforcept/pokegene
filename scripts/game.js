@@ -195,7 +195,8 @@ var Main = /** @class */ (function () {
             var types = StaticData.typesByPokemon[nr];
             var str = 0;
             types.forEach(function (type) {
-                str += manas[type];
+                if (type != 'normal')
+                    str += manas[type];
             });
             grabs.push({ nr: nr, str: str });
         };
@@ -205,7 +206,7 @@ var Main = /** @class */ (function () {
         }
         grabs.sort(function (a, b) { return b.str - a.str; });
         console.log(grabs);
-        var final = grabs[0];
+        var final = grabs[Math.floor(Math.abs(this.gaussianRandom() * 3))];
         this.addNewPokemon(final.nr);
         this.manaPanel.level++;
         this.manaPanel.removeAllMana();
@@ -543,8 +544,19 @@ var Pokemon = /** @class */ (function () {
                         /* onClic */ function () {
                             if (_this.timer >= _this.maxTimer) {
                                 _this.timer = 0;
-                                _this.card.createManaGainAnimation(_this.mainType);
-                                _this.main.manaPanel.addMana(_this.mainType, _this.level);
+                                var probs_1 = [];
+                                if (_this.level < 5) {
+                                    for (var i = 0; i < 5 - _this.level; i++)
+                                        probs_1.push('normal');
+                                }
+                                if (_this.level > 7)
+                                    _this.types.forEach(function (t) { return probs_1.push(t); });
+                                else
+                                    probs_1.push(_this.mainType);
+                                var finalType = probs_1[Math.floor(Math.random() * probs_1.length)];
+                                console.log(probs_1, finalType);
+                                _this.main.manaPanel.addMana(finalType, _this.level);
+                                _this.card.createManaGainAnimation(finalType);
                                 // TODO cookieData_addMana(type);
                                 _this.card.updateFilled();
                             }

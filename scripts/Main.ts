@@ -136,13 +136,14 @@ class Main {
             const types = StaticData.typesByPokemon[nr];
             let str = 0;
             types.forEach(type => {
-                str += manas[type];
+                if (type != 'normal')
+                    str += manas[type];
             });
             grabs.push({ nr, str })
         }
         grabs.sort((a, b) => b.str - a.str);
         console.log(grabs);
-        const final = grabs[0];
+        const final = grabs[Math.floor(Math.abs(this.gaussianRandom() * 3))];
         this.addNewPokemon(final.nr);
         this.manaPanel.level++;
         this.manaPanel.removeAllMana();
