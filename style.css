@@ -81,6 +81,7 @@ body.starting {
     left: -5px;
     top: -5px;
     width: 130px;
+    z-index: 100000;
     /* display: none; */
 }
 
