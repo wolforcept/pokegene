@@ -5,7 +5,7 @@ class ManaPanel {
 
     div: JQuery<HTMLElement>;
 
-    get nextTarget() { return Math.floor((4 + Math.pow(this.level, 1.1)) / 2); }
+    get nextTarget() { return Math.floor((4 + Math.pow(this.level / 2, 1.1)) / 2); }
 
     constructor(
         private main: Main,

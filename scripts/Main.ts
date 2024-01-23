@@ -174,9 +174,9 @@ class Main {
         // console.log({ currentPokemon });
 
         // get new pokemon prob stats:
-        const max = 0.5;
-        const start = 0.25;
-        const growth = 500;
+        const max = 0.1;
+        const start = 0.3;
+        const growth = 100;
         const getNewPokemonProb = (max - ((max - start) * (growth / (growth + currLevel))));
 
         console.log("new pokemon prob = " + getNewPokemonProb)

@@ -230,9 +230,9 @@ var Main = /** @class */ (function () {
         currentPokemon = currentPokemon.filter(function (x, i) { return currentPokemon.findIndex(function (y) { return y.nr === x.nr; }) === i; });
         // console.log({ currentPokemon });
         // get new pokemon prob stats:
-        var max = 0.5;
-        var start = 0.25;
-        var growth = 500;
+        var max = 0.1;
+        var start = 0.3;
+        var growth = 100;
         var getNewPokemonProb = (max - ((max - start) * (growth / (growth + currLevel))));
         console.log("new pokemon prob = " + getNewPokemonProb);
         var nr;
@@ -339,7 +339,7 @@ var ManaPanel = /** @class */ (function () {
         }
     }
     Object.defineProperty(ManaPanel.prototype, "nextTarget", {
-        get: function () { return Math.floor((4 + Math.pow(this.level, 1.1)) / 2); },
+        get: function () { return Math.floor((4 + Math.pow(this.level / 2, 1.1)) / 2); },
         enumerable: false,
         configurable: true
     });
