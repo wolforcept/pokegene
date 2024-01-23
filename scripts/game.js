@@ -1,3 +1,14 @@
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -58,11 +69,12 @@ var PokeTypes = Object.keys(Colors);
 function start() {
     new Main();
 }
-var clear;
+var clear, addP, explore;
 var Main = /** @class */ (function () {
     function Main() {
         var _this = this;
         this.pokemon = [];
+        this.increaseInFindingNewPokemon = 0;
         this.load()
             .then(function (loadedData) {
             // const prevolutions = [];
@@ -98,9 +110,11 @@ var Main = /** @class */ (function () {
             }
         });
         clear = function () {
-            new SavedData(1, [], {}).saveAll();
+            new SavedData(1, 0, [], {}).saveAll();
             window.location.reload();
         };
+        addP = function (a) { return _this.addNewPokemon(a); };
+        explore = function () { return _this.explore(); };
     }
     Main.prototype.load = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -115,7 +129,7 @@ var Main = /** @class */ (function () {
         });
     };
     Main.prototype.saveAll = function () {
-        new SavedData(this.manaPanel.level, this.pokemon.map(function (pokemon) { return ({
+        new SavedData(this.manaPanel.level, this.questsDone, this.pokemon.map(function (pokemon) { return ({
             x: pokemon.card.x,
             y: pokemon.card.y,
             isBall: pokemon.card.isBall,
@@ -152,26 +166,41 @@ var Main = /** @class */ (function () {
     };
     Main.prototype.joinPokemon = function (pokemon1, id2) {
         var pokemon2 = this.pokemon.find(function (x) { return x.card.id === id2; });
-        if (pokemon1 && pokemon2 && pokemon1.nr === pokemon2.nr && pokemon1.level === pokemon2.level) {
+        if (pokemon1 && pokemon2 && pokemon1.nr === pokemon2.nr && pokemon1.level === pokemon2.level && pokemon1.card.isOpened && pokemon2.card.isOpened) {
             // pokemon2.remove();
             this.pokemon.splice(this.pokemon.indexOf(pokemon2), 1);
             pokemon2.card.remove();
             pokemon1.level++;
+            pokemon1.timer = 0;
             pokemon1.card.animTempGrow();
             pokemon1.card.updateStars();
+            pokemon1.card.updateFilled();
         }
     };
     Main.prototype.start = function (loadedData) {
-        var _this = this;
-        loadedData.pokemon.forEach(function (savedPokemon) {
-            var newPokemon = new Pokemon(_this, savedPokemon.nr, savedPokemon.timer, savedPokemon.level);
-            newPokemon.init(savedPokemon);
-            _this.pokemon.push(newPokemon);
+        return __awaiter(this, void 0, void 0, function () {
+            var loadTimes;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        loadTimes = [];
+                        loadedData.pokemon.forEach(function (savedPokemon) {
+                            var newPokemon = new Pokemon(_this, savedPokemon.nr, savedPokemon.timer, savedPokemon.level);
+                            loadTimes.push(newPokemon.init(savedPokemon));
+                            _this.pokemon.push(newPokemon);
+                        });
+                        return [4 /*yield*/, Promise.all(loadTimes)];
+                    case 1:
+                        _a.sent();
+                        this.manaPanel = new ManaPanel(this, loadedData);
+                        this.manaPanel.init();
+                        this.manaPanel.update();
+                        this.stepperId = setInterval(function () { return _this.step(); }, 1000);
+                        return [2 /*return*/];
+                }
+            });
         });
-        this.manaPanel = new ManaPanel(this, loadedData);
-        this.manaPanel.init();
-        this.manaPanel.update();
-        this.stepperId = setInterval(function () { return _this.step(); }, 1000);
     };
     // explorations = 0
     Main.prototype.step = function () {
@@ -188,32 +217,96 @@ var Main = /** @class */ (function () {
         // console.log(this.manaPanel.mana);
     };
     Main.prototype.explore = function () {
+        var currLevel = this.manaPanel.level;
         var manas = this.manaPanel.mana;
+        var orderedManas = PokeTypes.filter(function (type) { return manas[type] > 0; }).map(function (type) { return ({ type: type, mana: manas[type] }); }).sort(function (a, b) { return (b.mana - a.mana); });
+        // const orderedManasWithoutNormal = orderedManas.filter(({ type }) => type !== 'normal');
+        var sum = orderedManas.reduce(function (t, x) { return (t + x.mana); }, 0);
+        var currentPokemonWithCurrentMana = this.pokemon.filter(function (x) { return orderedManas.find(function (_a) {
+            var type = _a.type;
+            return type === x.mainType || type === x.secondType;
+        }); });
+        var currentPokemon = currentPokemonWithCurrentMana.map(function (x) { return ({ nr: x.nr, type1: x.mainType, type2: x.secondType }); });
+        currentPokemon = currentPokemon.filter(function (x, i) { return currentPokemon.findIndex(function (y) { return y.nr === x.nr; }) === i; });
+        // console.log({ currentPokemon });
+        // get new pokemon prob stats:
+        var max = 0.5;
+        var start = 0.25;
+        var growth = 500;
+        var getNewPokemonProb = (max - ((max - start) * (growth / (growth + currLevel))));
+        console.log("new pokemon prob = " + getNewPokemonProb);
+        var nr;
+        if (currentPokemon.length > 0 && Math.random() > getNewPokemonProb) {
+            nr = this.exploreCurrentPokemon(currentPokemon, sum);
+            // this.increaseInFindingNewPokemon++;
+        }
+        else {
+            nr = this.exploreNewPokemon(currentPokemon.map(function (x) { return x.nr; }), orderedManas);
+            // this.increaseInFindingNewPokemon = 0;
+        }
+        if (nr) {
+            this.addNewPokemon(nr);
+            this.manaPanel.level++;
+            this.manaPanel.removeAllMana();
+        }
+    };
+    Main.prototype.exploreCurrentPokemon = function (pokemon, totalMana) {
+        console.log("exploring current pokemon...");
+        var manas = this.manaPanel.mana;
+        var weights = pokemon.map(function (x) {
+            var _a;
+            var mana1 = manas[x.type1];
+            var mana2 = (_a = manas[x.type2]) !== null && _a !== void 0 ? _a : 0;
+            return (mana1 + mana2) / totalMana;
+        });
+        var num = Math.random();
+        var s = 0;
+        var lastIndex = weights.length - 1;
+        // console.log(weights, pokemon.map(x => x.nr));
+        for (var i = 0; i < lastIndex; ++i) {
+            s += weights[i];
+            if (num < s) {
+                return pokemon[i].nr;
+            }
+        }
+        return pokemon[lastIndex].nr;
+    };
+    Main.prototype.exploreNewPokemon = function (currentNrs, manas2) {
+        var _a, _b;
+        var level = this.manaPanel.level;
+        var minNumber = (_b = (_a = Quests[this.questsDone - 1]) === null || _a === void 0 ? void 0 : _a.exploreNumber) !== null && _b !== void 0 ? _b : 1;
+        // const searchLength = Math.floor(Math.abs(this.gaussianRandom(50, 10)));
+        var searchLength = Math.floor(Math.abs(this.gaussianRandom(50, 10 + level / 4)));
+        // console.log({ minNumber, searchLength });
+        // console.log("exploring new pokemon...")
+        var manas = __assign({}, this.manaPanel.mana);
+        if (level < 100)
+            manas.normal = (1 - .01 * level) * PokeTypes.map(function (x) { return manas[x]; }).reduce(function (max, x) { return x > max ? x : max; }, 0);
+        // console.log(manas);
         var grabs = [];
         var _loop_1 = function (i) {
-            var nr = this_1.getRandomPokemon();
+            var nr = minNumber + i;
+            if (nr < minNumber
+                || StaticData.prevolutionsByPokemon[nr] !== null
+                || StaticData.prevolutionsByPokemon[nr] > nr
+                || currentNrs.find(function (x) { return x === nr; }))
+                return "continue";
             var types = StaticData.typesByPokemon[nr];
             var str = 0;
-            types.forEach(function (type) {
-                if (type != 'normal')
-                    str += manas[type];
-            });
+            types.forEach(function (type) { return str += manas[type]; });
             grabs.push({ nr: nr, str: str });
         };
-        var this_1 = this;
-        for (var i = 0; i < 20; i++) {
+        for (var i = 0; i < searchLength; i++) {
             _loop_1(i);
         }
         grabs.sort(function (a, b) { return b.str - a.str; });
-        console.log(grabs);
-        var final = grabs[Math.floor(Math.abs(this.gaussianRandom() * 3))];
-        this.addNewPokemon(final.nr);
-        this.manaPanel.level++;
-        this.manaPanel.removeAllMana();
+        // console.log(grabs);
+        var final = grabs[Math.min(grabs.length, Math.floor(Math.abs(this.gaussianRandom(0, 3))))];
+        return final.nr;
     };
     Main.prototype.getRandomPokemon = function () {
         var nr = 1 + Math.abs(Math.floor(this.gaussianRandom(this.manaPanel.level / 5, 10 + this.manaPanel.level / 10)));
-        while (StaticData.prevolutionsByPokemon[nr] != null)
+        while (StaticData.prevolutionsByPokemon[nr] != null || StaticData.prevolutionsByPokemon[nr] > nr)
             nr--;
         return nr;
         // console.log(nr);
@@ -243,11 +336,10 @@ var ManaPanel = /** @class */ (function () {
         if (loadedData) {
             PokeTypes.forEach(function (type) { return _this.mana[type] = loadedData.mana[type]; });
             this.level = loadedData.level;
-            console.log(this.level);
         }
     }
     Object.defineProperty(ManaPanel.prototype, "nextTarget", {
-        get: function () { return Math.floor((4 + Math.pow(this.level, 1.2)) / 2); },
+        get: function () { return Math.floor((4 + Math.pow(this.level, 1.1)) / 2); },
         enumerable: false,
         configurable: true
     });
@@ -447,7 +539,7 @@ var PokeCard = /** @class */ (function () {
         this.div.css('top', dx);
         this.enteringIntervalId = setInterval(function () {
             if (dx > 50) {
-                dx *= .99;
+                dx *= .975;
                 _this.div.css('left', 200 - dx);
                 _this.div.css('top', 200 - dx);
             }
@@ -488,14 +580,20 @@ var PokeCard = /** @class */ (function () {
         this.div.remove();
     };
     PokeCard.prototype.updateFilled = function () {
+        var _a;
         var color = Colors[this.pokemon.mainType];
+        var color2 = Colors[(_a = this.pokemon.types[1]) !== null && _a !== void 0 ? _a : this.pokemon.mainType];
         var n = 100 * this.pokemon.timer / this.pokemon.maxTimer;
         if (this.div.hasClass('ball')) {
-            var gradient = "radial-gradient(closest-side, #".concat(color[0], " 89%, transparent 90% 100%),\n            conic-gradient(white ").concat(n, "%, #").concat(color[0], " 0)");
-            this.div.css('background', gradient);
+            var gradient1 = "radial-gradient(closest-side, #".concat(color[0], " 89%, transparent 90% 100%), conic-gradient(white ").concat(n, "%, #").concat(color[0], " 0)");
+            var gradient2 = "linear-gradient(-45deg, #".concat(color2[0], " 49.9%, #").concat(color[0], " 50%)");
+            var gradient3 = "radial-gradient(closest-side, #".concat(color[0], " 89%, transparent 90% 100%), conic-gradient(white ").concat(n, "%, #").concat(color[0], " 0), linear-gradient(-45deg, #").concat(color2[0], " 49.9%, #").concat(color[0], " 50%)");
+            this.div.css('background', gradient3);
         }
         else {
-            this.div.css('background', "#".concat(color[0]));
+            // const gradient = `#${color[0]}`;
+            var gradient = "linear-gradient(-45deg, #".concat(color2[0], " 49.9%, #").concat(color[0], " 50%), linear-gradient(-45deg, #").concat(color2[0], " 49.9%, #").concat(color[0], " 50%)");
+            this.div.css('background', gradient);
             this.div.find('.pokemonName').css('background', "linear-gradient(180deg,  #".concat(color[0], " 85%, transparent 86%), \n                                                     linear-gradient(90deg, white ").concat(n, "%, rgb(0,0,0,0.2) ").concat(n + 1, "%)"));
         }
         // card.css("background", `radial-gradient(closest-side, #${color} 79%, transparent 80% 100%), conic-gradient(white ${n}%, transparent 0)`)
@@ -511,6 +609,8 @@ var PokeCard = /** @class */ (function () {
     };
     return PokeCard;
 }());
+// const normalTypeProbability = [1, .5, .36666, .23333, .1, 0, 0, 0, 0, 0, 0];
+var secondTypeProbability = [0, 0, 0, 0, 0, 0, 0, 0.1666, .3333, .5];
 var Pokemon = /** @class */ (function () {
     function Pokemon(main, nr, timer, level) {
         this.main = main;
@@ -529,6 +629,11 @@ var Pokemon = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Pokemon.prototype, "secondType", {
+        get: function () { return this.types[1]; },
+        enumerable: false,
+        configurable: true
+    });
     Pokemon.prototype.init = function (savedPokemon) {
         return __awaiter(this, void 0, void 0, function () {
             var staticData;
@@ -544,20 +649,14 @@ var Pokemon = /** @class */ (function () {
                         /* onClic */ function () {
                             if (_this.timer >= _this.maxTimer) {
                                 _this.timer = 0;
-                                var probs_1 = [];
-                                if (_this.level < 5) {
-                                    for (var i = 0; i < 5 - _this.level; i++)
-                                        probs_1.push('normal');
+                                var _loop_2 = function (i) {
+                                    var manaType = Math.random() < secondTypeProbability[_this.level] ? _this.secondType : _this.mainType;
+                                    _this.main.manaPanel.addMana(manaType, 1);
+                                    setTimeout(function () { return _this.card.createManaGainAnimation(manaType); }, i * 200 + (100 * Math.random()));
+                                };
+                                for (var i = 0; i < _this.level; i++) {
+                                    _loop_2(i);
                                 }
-                                if (_this.level > 7)
-                                    _this.types.forEach(function (t) { return probs_1.push(t); });
-                                else
-                                    probs_1.push(_this.mainType);
-                                var finalType = probs_1[Math.floor(Math.random() * probs_1.length)];
-                                console.log(probs_1, finalType);
-                                _this.main.manaPanel.addMana(finalType, _this.level);
-                                _this.card.createManaGainAnimation(finalType);
-                                // TODO cookieData_addMana(type);
                                 _this.card.updateFilled();
                             }
                         }, 
@@ -578,14 +677,21 @@ var Pokemon = /** @class */ (function () {
     };
     return Pokemon;
 }());
+var Quests = [
+    {
+        manaRequired: { 'normal': 100 },
+        exploreNumber: 50,
+    }
+];
 var SavedData = /** @class */ (function () {
-    function SavedData(level, pokemon, mana) {
+    function SavedData(level, questsDone, pokemon, mana) {
         this.level = level;
+        this.questsDone = questsDone;
         this.pokemon = pokemon;
         this.mana = mana;
     }
     SavedData.createNew = function () {
-        return new SavedData(1, [], { 'normal': 0, 'grass': 0, 'poison': 0, 'fire': 0, 'flying': 0, 'water': 0, 'bug': 0, 'electric': 0, 'ground': 0, 'fairy': 0, 'fighting': 0, 'psychic': 0, 'rock': 0, 'steel': 0, 'ice': 0, 'ghost': 0, 'dragon': 0, 'dark': 0 });
+        return new SavedData(1, 0, [], { 'normal': 0, 'grass': 0, 'poison': 0, 'fire': 0, 'flying': 0, 'water': 0, 'bug': 0, 'electric': 0, 'ground': 0, 'fairy': 0, 'fighting': 0, 'psychic': 0, 'rock': 0, 'steel': 0, 'ice': 0, 'ghost': 0, 'dragon': 0, 'dark': 0 });
     };
     SavedData.load = function () {
         var _a;
@@ -702,6 +808,7 @@ var StaticData = /** @class */ (function () {
                                 .then(function (json) { return _this.typesByPokemon = json; })];
                     case 1:
                         _a.sent();
+                        console.log({ typesByPokemon: this.typesByPokemon });
                         // console.log(typesByPokemon)
                         return [4 /*yield*/, fetch('../assets/data/pokemonsByType.json')
                                 .then(function (response) { return response.json(); })
@@ -709,11 +816,13 @@ var StaticData = /** @class */ (function () {
                     case 2:
                         // console.log(typesByPokemon)
                         _a.sent();
+                        console.log({ pokemonsByType: this.pokemonsByType });
                         return [4 /*yield*/, fetch('../assets/data/evolutionsByPokemon.json')
                                 .then(function (response) { return response.json(); })
                                 .then(function (json) { return _this.evolutionsByPokemon = json; })];
                     case 3:
                         _a.sent();
+                        console.log({ evolutionsByPokemon: this.evolutionsByPokemon });
                         return [4 /*yield*/, fetch('../assets/data/prevolutionsByPokemon.json')
                                 .then(function (response) { return response.json(); })
                                 .then(function (json) { return _this.prevolutionsByPokemon = json; })];

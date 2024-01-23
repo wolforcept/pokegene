@@ -2,6 +2,7 @@ class SavedData {
 
     constructor(
         public level: number,
+        public questsDone: number,
         public pokemon: Array<SavedPokemon>,
         public mana: { [key in PokeType]?: number },
     ) { }
@@ -9,6 +10,7 @@ class SavedData {
     private static createNew() {
         return new SavedData(
             1,
+            0,
             [],
             { 'normal': 0, 'grass': 0, 'poison': 0, 'fire': 0, 'flying': 0, 'water': 0, 'bug': 0, 'electric': 0, 'ground': 0, 'fairy': 0, 'fighting': 0, 'psychic': 0, 'rock': 0, 'steel': 0, 'ice': 0, 'ghost': 0, 'dragon': 0, 'dark': 0 }
         );

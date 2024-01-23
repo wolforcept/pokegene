@@ -1,3 +1,6 @@
+// const normalTypeProbability = [1, .5, .36666, .23333, .1, 0, 0, 0, 0, 0, 0];
+const secondTypeProbability = [0, 0, 0, 0, 0, 0, 0, 0.1666, .3333, .5];
+
 class Pokemon {
 
     card: PokeCard;
@@ -6,6 +9,7 @@ class Pokemon {
 
     get maxTimer(): number { return Math.floor(5 * Math.pow(this.level, 0.66666)) };
     get mainType() { return this.types[0]; }
+    get secondType() { return this.types[1]; }
 
     constructor(
         private main: Main,
@@ -21,25 +25,13 @@ class Pokemon {
         this.types = staticData.types;
         this.card = new PokeCard(this,
             /* onClic */() => {
-
                 if (this.timer >= this.maxTimer) {
                     this.timer = 0;
-                    const probs = [];
-                    if (this.level < 5) {
-                        for (let i = 0; i < 5 - this.level; i++)
-                            probs.push('normal')
+                    for (let i = 0; i < this.level; i++) {
+                        let manaType: PokeType = Math.random() < secondTypeProbability[this.level] ? this.secondType : this.mainType;
+                        this.main.manaPanel.addMana(manaType, 1);
+                        setTimeout(() => this.card.createManaGainAnimation(manaType), i * 200 + (100 * Math.random()));
                     }
-                    if (this.level > 7)
-                        this.types.forEach(t => probs.push(t))
-                    else
-                        probs.push(this.mainType)
-                    const finalType = probs[Math.floor(Math.random() * probs.length)]
-                    console.log(probs, finalType)
-
-                    this.main.manaPanel.addMana(finalType, this.level);
-                    this.card.createManaGainAnimation(finalType);
-
-                    // TODO cookieData_addMana(type);
                     this.card.updateFilled();
                 }
             },

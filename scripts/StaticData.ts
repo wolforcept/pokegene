@@ -17,13 +17,16 @@ class StaticData {
         await fetch('../assets/data/typesByPokemon.json')
             .then((response) => response.json())
             .then((json) => this.typesByPokemon = json);
+        console.log({ typesByPokemon: this.typesByPokemon });
         // console.log(typesByPokemon)
         await fetch('../assets/data/pokemonsByType.json')
             .then((response) => response.json())
             .then((json) => this.pokemonsByType = json);
+        console.log({ pokemonsByType: this.pokemonsByType });
         await fetch('../assets/data/evolutionsByPokemon.json')
             .then((response) => response.json())
             .then((json) => this.evolutionsByPokemon = json);
+        console.log({ evolutionsByPokemon: this.evolutionsByPokemon });
         await fetch('../assets/data/prevolutionsByPokemon.json')
             .then((response) => response.json())
             .then((json) => this.prevolutionsByPokemon = json);

@@ -5,7 +5,7 @@ class ManaPanel {
 
     div: JQuery<HTMLElement>;
 
-    get nextTarget() { return Math.floor((4 + Math.pow(this.level, 1.2)) / 2); }
+    get nextTarget() { return Math.floor((4 + Math.pow(this.level, 1.1)) / 2); }
 
     constructor(
         private main: Main,
@@ -14,7 +14,6 @@ class ManaPanel {
         if (loadedData) {
             PokeTypes.forEach(type => this.mana[type] = loadedData.mana[type]);
             this.level = loadedData.level;
-            console.log(this.level)
         }
     }
 

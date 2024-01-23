@@ -184,7 +184,7 @@ class PokeCard {
         this.div.css('top', dx);
         this.enteringIntervalId = setInterval(() => {
             if (dx > 50) {
-                dx *= .99;
+                dx *= .975;
                 this.div.css('left', 200 - dx);
                 this.div.css('top', 200 - dx);
             } else {
@@ -225,17 +225,21 @@ class PokeCard {
 
     updateFilled() {
         const color = Colors[this.pokemon.mainType];
+        const color2 = Colors[this.pokemon.types[1] ?? this.pokemon.mainType];
         const n = 100 * this.pokemon.timer / this.pokemon.maxTimer;
 
         if (this.div.hasClass('ball')) {
 
-            const gradient = `radial-gradient(closest-side, #${color[0]} 89%, transparent 90% 100%),
-            conic-gradient(white ${n}%, #${color[0]} 0)`;
-            this.div.css('background', gradient);
+            const gradient1 = `radial-gradient(closest-side, #${color[0]} 89%, transparent 90% 100%), conic-gradient(white ${n}%, #${color[0]} 0)`;
+            const gradient2 = `linear-gradient(-45deg, #${color2[0]} 49.9%, #${color[0]} 50%)`;
+            const gradient3 = `radial-gradient(closest-side, #${color[0]} 89%, transparent 90% 100%), conic-gradient(white ${n}%, #${color[0]} 0), linear-gradient(-45deg, #${color2[0]} 49.9%, #${color[0]} 50%)`;
+            this.div.css('background', gradient3);
 
         } else {
 
-            this.div.css('background', `#${color[0]}`);
+            // const gradient = `#${color[0]}`;
+            const gradient = `linear-gradient(-45deg, #${color2[0]} 49.9%, #${color[0]} 50%), linear-gradient(-45deg, #${color2[0]} 49.9%, #${color[0]} 50%)`;
+            this.div.css('background', gradient);
             this.div.find('.pokemonName').css('background', `linear-gradient(180deg,  #${color[0]} 85%, transparent 86%), 
                                                      linear-gradient(90deg, white ${n}%, rgb(0,0,0,0.2) ${n + 1}%)`
             );
