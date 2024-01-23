@@ -76,6 +76,7 @@ body.starting {
 /* POKEBALL */
 
 .pokemon .pokeballImage {
+    display: none;
     opacity: 0%;
     position: absolute;
     left: -5px;
@@ -88,13 +89,13 @@ body.starting {
 .pokemon.closed .topDiv,
 .pokemon.closed .typesDiv,
 .pokemon.closed .pokemonImage {
-    /* display: none !important; */
     opacity: 0%;
 }
 
 .pokemon.closed .pokeballImage {
     /* display: block !important; */
     opacity: 100%;
+    display: block;
 
     /* display: none; */
     /* background: transparent url("./assets/items/pokeball.png") left center/120px 120px no-repeat !important;
