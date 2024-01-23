@@ -210,7 +210,7 @@ class PokeCard {
         this.div.css('position', 'absolute')
         this.div.draggable({ drag: ({ }, event) => { this._onDrag(event); return !this.enteringIntervalId; } });
         this.div.droppable({ drop: (event1, event2) => this._onDrop(event1, event2) });
-        this.div.click(() => this.onClick());
+        this.div.on('click', () => this.onClick());
         this.div.on('mousedown', () => this._onMouseDown());
         this.div.on('mouseup', () => this._onMouseUp());
         // this.div.on('mouseleave', () => this._onMouseLeave());
