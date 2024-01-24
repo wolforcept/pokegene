@@ -31,7 +31,8 @@ class ManaPanel {
         let percentPrev = 0;
         let rollingSum = 0;
         let gradientString = '';
-        PokeTypes.forEach(type => {
+        const orderedTypes = [...PokeTypes].sort((a, b) => mana[a] - mana[b]);
+        orderedTypes.forEach(type => {
             if (mana[type] && mana[type] > 0) {
                 rollingSum += mana[type];
                 const color = Colors[type][0];

@@ -21,4 +21,4 @@ const Colors: { [key in PokeType]: Array<string> } = {
 
 type PokeType = 'normal' | 'grass' | 'poison' | 'fire' | 'flying' | 'water' | 'bug' | 'electric' | 'ground' | 'fairy' | 'fighting' | 'psychic' | 'rock' | 'steel' | 'ice' | 'ghost' | 'dragon' | 'dark';
 
-const PokeTypes = Object.keys(Colors);
+const PokeTypes = Object.keys(Colors) as Array<PokeType>;
