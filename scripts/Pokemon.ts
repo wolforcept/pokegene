@@ -7,7 +7,8 @@ class Pokemon {
     name: string
     types: PokeType[];
 
-    get maxTimer(): number { return Math.floor(5 * Math.pow(this.level, 0.66666)) };
+    get maxTimer(): number { return 5; };
+    // get maxTimer(): number { return Math.floor(5 * Math.pow(this.level, 0.66666)) };
     get mainType() { return this.types[0]; }
     get secondType() { return this.types[1]; }
 

@@ -629,12 +629,13 @@ var Pokemon = /** @class */ (function () {
         this.level = level;
     }
     Object.defineProperty(Pokemon.prototype, "maxTimer", {
-        get: function () { return Math.floor(5 * Math.pow(this.level, 0.66666)); },
+        get: function () { return 5; },
         enumerable: false,
         configurable: true
     });
     ;
     Object.defineProperty(Pokemon.prototype, "mainType", {
+        // get maxTimer(): number { return Math.floor(5 * Math.pow(this.level, 0.66666)) };
         get: function () { return this.types[0]; },
         enumerable: false,
         configurable: true
