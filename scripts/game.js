@@ -45,6 +45,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var Colors = {
     'normal': ['d5d5d5', '000000BB'],
     'grass': ['5fdb83', '000000BB'],
@@ -356,7 +365,8 @@ var ManaPanel = /** @class */ (function () {
         var percentPrev = 0;
         var rollingSum = 0;
         var gradientString = '';
-        PokeTypes.forEach(function (type) {
+        var orderedTypes = __spreadArray([], PokeTypes, true).sort(function (a, b) { return mana[a] - mana[b]; });
+        orderedTypes.forEach(function (type) {
             if (mana[type] && mana[type] > 0) {
                 rollingSum += mana[type];
                 var color = Colors[type][0];
@@ -568,7 +578,7 @@ var PokeCard = /** @class */ (function () {
         this.div.css('position', 'absolute');
         this.div.draggable({ drag: function (_a, event) { _this._onDrag(event); return !_this.enteringIntervalId; } });
         this.div.droppable({ drop: function (event1, event2) { return _this._onDrop(event1, event2); } });
-        this.div.click(function () { return _this.onClick(); });
+        this.div.on('click', function () { return _this.onClick(); });
         this.div.on('mousedown', function () { return _this._onMouseDown(); });
         this.div.on('mouseup', function () { return _this._onMouseUp(); });
         // this.div.on('mouseleave', () => this._onMouseLeave());
