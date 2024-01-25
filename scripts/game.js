@@ -660,12 +660,15 @@ var Pokemon = /** @class */ (function () {
                         /* onClic */ function () {
                             if (_this.timer >= _this.maxTimer) {
                                 _this.timer = 0;
+                                var manaGain = Math.pow(2, _this.level - 1);
                                 var _loop_2 = function (i) {
                                     var manaType = Math.random() < secondTypeProbability[_this.level] ? _this.secondType : _this.mainType;
-                                    _this.main.manaPanel.addMana(manaType, 1);
-                                    setTimeout(function () { return _this.card.createManaGainAnimation(manaType); }, i * 200 + (100 * Math.random()));
+                                    setTimeout(function () {
+                                        _this.main.manaPanel.addMana(manaType, 1);
+                                        _this.card.createManaGainAnimation(manaType);
+                                    }, i * 200 + (100 * Math.random()));
                                 };
-                                for (var i = 0; i < _this.level; i++) {
+                                for (var i = 0; i < manaGain; i++) {
                                     _loop_2(i);
                                 }
                                 _this.card.updateFilled();

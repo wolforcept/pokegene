@@ -28,10 +28,13 @@ class Pokemon {
             /* onClic */() => {
                 if (this.timer >= this.maxTimer) {
                     this.timer = 0;
-                    for (let i = 0; i < this.level; i++) {
+                    const manaGain = Math.pow(2, this.level - 1);
+                    for (let i = 0; i < manaGain; i++) {
                         let manaType: PokeType = Math.random() < secondTypeProbability[this.level] ? this.secondType : this.mainType;
-                        this.main.manaPanel.addMana(manaType, 1);
-                        setTimeout(() => this.card.createManaGainAnimation(manaType), i * 200 + (100 * Math.random()));
+                        setTimeout(() => {
+                            this.main.manaPanel.addMana(manaType, 1);
+                            this.card.createManaGainAnimation(manaType)
+                        }, i * 200 + (100 * Math.random()));
                     }
                     this.card.updateFilled();
                 }
