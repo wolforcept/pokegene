@@ -48,8 +48,8 @@ class Main {
                                 nr,
                                 timer: 0,
                                 level: 1,
-                                x: null,
-                                y: null,
+                                x: 0,
+                                y: 0,
                                 isBall: true,
                                 isOpened: false
                             })
@@ -161,7 +161,7 @@ class Main {
         this.pathPanel.init();
         this.pathPanel.update();
 
-        this.stepperId = setInterval(() => this.step(), 1000);
+        this.stepperId = setInterval(() => this.step(), 250);
 
         // explore();
 

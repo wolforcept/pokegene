@@ -9,7 +9,7 @@ class Pokemon {
 
     // get maxTimer(): number { return 5; };
     // get maxTimer(): number { return Math.floor(5 * Math.pow(this.level, 0.66666)) };
-    get maxTimer(): number { return Math.pow(3, this.level - 1) };
+    get maxTimer(): number { return 5 + Math.pow(3, this.level - 1) };
     get mainType() { return this.types[0]; }
     get secondType() { return this.types[1]; }
     get starsString() {

@@ -87,10 +87,10 @@ var boatAffixes = [
     { minLevel: 1, maxLevel: 100, name: "Libra", adds: [] },
     { minLevel: 1, maxLevel: 100, name: "Cactus", adds: [] },
     { minLevel: 1, maxLevel: 100, name: "Libra", adds: [] },
-    { minLevel: 1, maxLevel: 100, name: "Prime", adds: [{ type: "fighting", amount: 2 }] },
+    { minLevel: 25, maxLevel: 100, name: "Prime", adds: [{ type: "fighting", amount: 2 }] },
     { minLevel: 1, maxLevel: 100, name: "Tidal", adds: [] },
     { minLevel: 20, maxLevel: 100, name: "Flower", adds: [{ type: "grass", amount: 2 }] },
-    { minLevel: 50, maxLevel: 100, name: "Royal", adds: [{ type: "dragon", amount: 0.5 }] },
+    { minLevel: 40, maxLevel: 100, name: "Royal", adds: [{ type: "dragon", amount: 0.5 }] },
 ];
 var cityAffixes = [
     { minLevel: 1, maxLevel: 100, name: "Accumula", adds: [{ type: "normal", amount: 0.5 }] },
@@ -220,63 +220,63 @@ var cityAffixes = [
     { minLevel: 1, maxLevel: 100, name: "Zapapico", adds: [{ type: "normal", amount: 0.5 }] },
 ];
 var mountainAffixes = [
-    { minLevel: 1, maxLevel: 100, name: "Chimney", adds: [{ type: "fire", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Moon", adds: [{ type: "fairy", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Avalanche", adds: [{ type: "water" }, { type: "ice", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Battle", adds: [{ type: "dragon", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Blaze", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 10, maxLevel: 100, name: "Chimney", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 30, maxLevel: 100, name: "Moon", adds: [{ type: "fairy", amount: 2 }] },
+    { minLevel: 35, maxLevel: 100, name: "Avalanche", adds: [{ type: "water" }, { type: "ice", amount: 2 }] },
+    { minLevel: 40, maxLevel: 100, name: "Battle", adds: [{ type: "dragon", amount: 2 }] },
+    { minLevel: 10, maxLevel: 100, name: "Blaze", adds: [{ type: "fire", amount: 2 }] },
     { minLevel: 1, maxLevel: 100, name: "Clear", adds: [] },
     { minLevel: 1, maxLevel: 100, name: "Cleft", adds: [] },
-    { minLevel: 1, maxLevel: 100, name: "Freeze", adds: [{ type: "ice", amount: 2 }] },
+    { minLevel: 35, maxLevel: 100, name: "Freeze", adds: [{ type: "ice", amount: 2 }] },
     { minLevel: 1, maxLevel: 100, name: "Green", adds: [{ type: "grass", amount: 2 }] },
     { minLevel: 1, maxLevel: 100, name: "Horn", adds: [{ type: "normal" }, { type: "bug", amount: 2 }] },
     { minLevel: 1, maxLevel: 100, name: "Lanakila", adds: [] },
     { minLevel: 1, maxLevel: 100, name: "Mistral", adds: [{ type: "normal" }] },
-    { minLevel: 1, maxLevel: 100, name: "Molteau", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 10, maxLevel: 100, name: "Molteau", adds: [{ type: "fire", amount: 2 }] },
     { minLevel: 1, maxLevel: 100, name: "Mortar", adds: [] },
-    { minLevel: 1, maxLevel: 100, name: "Moonview", adds: [{ type: "fairy", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Pyre", adds: [{ type: "fire", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Snowfall", adds: [{ type: "ice", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Shady", adds: [{ type: "ghost", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Spirit", adds: [{ type: "ghost", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Steel", adds: [{ type: "steel", amount: 2 }] },
+    { minLevel: 30, maxLevel: 100, name: "Moonview", adds: [{ type: "fairy", amount: 2 }] },
+    { minLevel: 10, maxLevel: 100, name: "Pyre", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 35, maxLevel: 100, name: "Snowfall", adds: [{ type: "ice", amount: 2 }] },
+    { minLevel: 20, maxLevel: 100, name: "Shady", adds: [{ type: "ghost", amount: 2 }] },
+    { minLevel: 20, maxLevel: 100, name: "Spirit", adds: [{ type: "ghost", amount: 2 }] },
+    { minLevel: 50, maxLevel: 100, name: "Steel", adds: [{ type: "steel", amount: 2 }] },
 ];
 var pathPrefixes = [
     { minLevel: 1, maxLevel: 100, name: "{city} {any}", adds: [{ type: "normal", amount: 0.5 }] },
     { minLevel: 1, maxLevel: 100, name: "Cave of {any}", adds: [{ type: "rock" }, { type: "ground", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Meteor {any}", adds: [{ type: "fire" }, { type: "flying" }] },
-    { minLevel: 1, maxLevel: 100, name: "Magma {any}", adds: [{ type: "fire", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Venom {any}", adds: [{ type: "poison", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Warring {any}", adds: [{ type: "fighting", amount: 2 }] },
+    { minLevel: 10, maxLevel: 100, name: "Meteor {any}", adds: [{ type: "fire" }, { type: "flying" }] },
+    { minLevel: 10, maxLevel: 100, name: "Magma {any}", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 10, maxLevel: 100, name: "Venom {any}", adds: [{ type: "poison", amount: 2 }] },
+    { minLevel: 25, maxLevel: 100, name: "Warring {any}", adds: [{ type: "fighting", amount: 2 }] },
     { minLevel: 1, maxLevel: 100, name: "Rocky {any}", adds: [{ type: "rock", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Fire {any}", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 10, maxLevel: 100, name: "Fire {any}", adds: [{ type: "fire", amount: 2 }] },
     { minLevel: 1, maxLevel: 100, name: "Bloom {any}", adds: [{ type: "grass", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Poison {any}", adds: [{ type: "poison", amount: 3 }] },
-    { minLevel: 1, maxLevel: 100, name: "Iron {any}", adds: [{ type: "steel", amount: 3 }] },
-    { minLevel: 1, maxLevel: 100, name: "Puzzle {any}", adds: [{ type: "psychic", amount: 2 }] },
+    { minLevel: 10, maxLevel: 100, name: "Poison {any}", adds: [{ type: "poison", amount: 3 }] },
+    { minLevel: 50, maxLevel: 100, name: "Iron {any}", adds: [{ type: "steel", amount: 3 }] },
+    { minLevel: 15, maxLevel: 100, name: "Puzzle {any}", adds: [{ type: "psychic", amount: 2 }] },
     { minLevel: 1, maxLevel: 100, name: "Sky {any}", adds: [{ type: "flying", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Ghost {any}", adds: [{ type: "ghost" }] },
-    { minLevel: 1, maxLevel: 100, name: "Snow {any}", adds: [{ type: "ice", amount: 3 }, { type: "water" }] },
+    { minLevel: 20, maxLevel: 100, name: "Ghost {any}", adds: [{ type: "ghost" }] },
+    { minLevel: 35, maxLevel: 100, name: "Snow {any}", adds: [{ type: "ice", amount: 3 }, { type: "water" }] },
     { minLevel: 1, maxLevel: 100, name: "Clay {any}", adds: [{ type: "ground" }] },
-    { minLevel: 1, maxLevel: 100, name: "Rainbow {any}", adds: [{ type: "grass" }, { type: "psychic" }] },
-    { minLevel: 1, maxLevel: 100, name: "Twist {any}", adds: [{ type: "psychic", amount: 2 }, { type: "dragon", amount: 1 }] },
+    { minLevel: 15, maxLevel: 100, name: "Rainbow {any}", adds: [{ type: "grass" }, { type: "psychic" }] },
+    { minLevel: 40, maxLevel: 100, name: "Twist {any}", adds: [{ type: "psychic", amount: 2 }, { type: "dragon", amount: 1 }] },
     { minLevel: 1, maxLevel: 100, name: "Rock {any}", adds: [{ type: "rock", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Unknown {any}", adds: [{ type: "dark" }] },
+    { minLevel: 50, maxLevel: 100, name: "Unknown {any}", adds: [{ type: "dark" }] },
     { minLevel: 1, maxLevel: 100, name: "Giant {any}", adds: [{ type: "flying" }] },
-    { minLevel: 1, maxLevel: 100, name: "Ember {any}", adds: [{ type: "fire" }] },
-    { minLevel: 1, maxLevel: 100, name: "Frozen {any}", adds: [{ type: "ice" }] },
-    { minLevel: 1, maxLevel: 100, name: "Freezing {any}", adds: [{ type: "ice" }, { type: "water" }] },
-    { minLevel: 1, maxLevel: 100, name: "Glittering {any}", adds: [{ type: "fairy", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Grace {any}", adds: [{ type: "fairy" }] },
-    { minLevel: 1, maxLevel: 100, name: "Charged {any}", adds: [{ type: "electric" }] },
-    { minLevel: 1, maxLevel: 100, name: "Dark {any}", adds: [{ type: "dark", amount: 2 }, { type: "ghost" }] },
-    { minLevel: 1, maxLevel: 100, name: "Mirage {any}", adds: [{ type: "ghost" }] },
+    { minLevel: 10, maxLevel: 100, name: "Ember {any}", adds: [{ type: "fire" }] },
+    { minLevel: 35, maxLevel: 100, name: "Frozen {any}", adds: [{ type: "ice" }] },
+    { minLevel: 35, maxLevel: 100, name: "Freezing {any}", adds: [{ type: "ice" }, { type: "water" }] },
+    { minLevel: 30, maxLevel: 100, name: "Glittering {any}", adds: [{ type: "fairy", amount: 2 }] },
+    { minLevel: 30, maxLevel: 100, name: "Grace {any}", adds: [{ type: "fairy" }] },
+    { minLevel: 10, maxLevel: 100, name: "Charged {any}", adds: [{ type: "electric" }] },
+    { minLevel: 50, maxLevel: 100, name: "Dark {any}", adds: [{ type: "dark", amount: 2 }, { type: "ghost" }] },
+    { minLevel: 20, maxLevel: 100, name: "Mirage {any}", adds: [{ type: "ghost" }] },
     { minLevel: 1, maxLevel: 100, name: "Great {any}", adds: [{ type: "flying" }] },
-    { minLevel: 1, maxLevel: 100, name: "Ice {any}", adds: [{ type: "ice", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Dragon {any}", adds: [{ type: "dragon", amount: 2 }] },
+    { minLevel: 35, maxLevel: 100, name: "Ice {any}", adds: [{ type: "ice", amount: 2 }] },
+    { minLevel: 40, maxLevel: 100, name: "Dragon {any}", adds: [{ type: "dragon", amount: 2 }] },
     { minLevel: 1, maxLevel: 100, name: "Mt {mt}", adds: [{ type: "normal", amount: 0.5 }], final: true },
-    { minLevel: 1, maxLevel: 100, name: "S.S. {boat}", adds: [{ type: "water" }], final: true },
-    { minLevel: 1, maxLevel: 100, name: "Safari Zone", adds: [{ type: "flying" }, { type: "grass" }, { type: "water" }, { type: "normal" }, { type: "poison" }, { type: "rock" }, { type: "ground" }], final: true },
+    { minLevel: 5, maxLevel: 100, name: "S.S. {boat}", adds: [{ type: "water" }], final: true },
+    { minLevel: 30, maxLevel: 100, name: "Safari Zone", adds: [{ type: "flying" }, { type: "grass" }, { type: "water" }, { type: "normal" }, { type: "poison" }, { type: "rock" }, { type: "ground" }], final: true },
     { minLevel: 1, maxLevel: 100, name: "{city} Grasslands", adds: [{ type: "grass" }, { type: "bug" }], final: true },
     { minLevel: 1, maxLevel: 100, name: "Cape of {city}", adds: [{ type: "normal", amount: 0.3 }], final: true },
     { minLevel: 1, maxLevel: 100, name: "Great {any} of {city}", adds: [] },
@@ -284,23 +284,23 @@ var pathPrefixes = [
 var pathSufixes = [
     { minLevel: 1, maxLevel: 100, name: "{any} of {any}", adds: [] },
     { minLevel: 1, maxLevel: 100, name: "{any} and {any}", adds: [] },
-    { minLevel: 1, maxLevel: 100, name: "Ring", adds: [{ type: "fighting" }] },
-    { minLevel: 1, maxLevel: 100, name: "Arena", adds: [{ type: "fighting", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Blight", adds: [{ type: "poison", amount: 2 }, { type: "ghost", amount: 2 }] },
-    { minLevel: 1, maxLevel: 100, name: "Swamp", adds: [{ type: "poison", amount: 3 }] },
-    { minLevel: 1, maxLevel: 100, name: "Pass", adds: [{ type: "normal" }, { type: "fighting" }] },
+    { minLevel: 25, maxLevel: 100, name: "Ring", adds: [{ type: "fighting" }] },
+    { minLevel: 25, maxLevel: 100, name: "Arena", adds: [{ type: "fighting", amount: 2 }] },
+    { minLevel: 20, maxLevel: 100, name: "Blight", adds: [{ type: "poison", amount: 2 }, { type: "ghost", amount: 2 }] },
+    { minLevel: 10, maxLevel: 100, name: "Swamp", adds: [{ type: "poison", amount: 3 }] },
+    { minLevel: 25, maxLevel: 100, name: "Pass", adds: [{ type: "normal" }, { type: "fighting" }] },
     { minLevel: 1, maxLevel: 100, name: "Stone", adds: [{ type: "rock" }] },
     { minLevel: 1, maxLevel: 100, name: "Hill", adds: [{ type: "normal" }, { type: "grass" }, { type: "bug" }] },
     { minLevel: 1, maxLevel: 100, name: "Pillar", adds: [{ type: "grass" }] },
     { minLevel: 1, maxLevel: 100, name: "Settlement", adds: [{ type: "grass" }] },
     { minLevel: 1, maxLevel: 100, name: "Peak", adds: [{ type: "flying" }] },
     { minLevel: 1, maxLevel: 100, name: "Mountain", adds: [{ type: "ground" }, { type: "rock" }] },
-    { minLevel: 1, maxLevel: 100, name: "Volcano", adds: [{ type: "fire" }, { type: "dragon" }] },
+    { minLevel: 40, maxLevel: 100, name: "Volcano", adds: [{ type: "fire" }, { type: "dragon" }] },
     { minLevel: 1, maxLevel: 100, name: "Apex", adds: [{ type: "flying" }] },
-    { minLevel: 1, maxLevel: 100, name: "Ship", adds: [{ type: "water" }] },
-    { minLevel: 1, maxLevel: 100, name: "Ferry", adds: [{ type: "water" }] },
+    { minLevel: 5, maxLevel: 100, name: "Ship", adds: [{ type: "water" }] },
+    { minLevel: 5, maxLevel: 100, name: "Ferry", adds: [{ type: "water" }] },
     { minLevel: 1, maxLevel: 100, name: "Tree", adds: [{ type: "grass" }, { type: "bug" }] },
-    { minLevel: 1, maxLevel: 100, name: "Port", adds: [{ type: "water" }] },
+    { minLevel: 5, maxLevel: 100, name: "Port", adds: [{ type: "water" }] },
     { minLevel: 1, maxLevel: 100, name: "Canyon", adds: [{ type: "ground" }] },
     { minLevel: 1, maxLevel: 100, name: "City", adds: [{ type: "normal" }] },
     { minLevel: 1, maxLevel: 100, name: "Town", adds: [{ type: "normal" }] },
@@ -309,26 +309,27 @@ var pathSufixes = [
     { minLevel: 1, maxLevel: 100, name: "Route", adds: [{ type: "normal" }] },
     { minLevel: 1, maxLevel: 100, name: "Summit", adds: [{ type: "normal" }, { type: "flying" }] },
     { minLevel: 1, maxLevel: 100, name: "Tunnel", adds: [{ type: "rock" }, { type: "ground" }] },
-    { minLevel: 1, maxLevel: 100, name: "Ruins", adds: [{ type: "rock" }, { type: "ghost", amount: 0.1 }] },
-    { minLevel: 1, maxLevel: 100, name: "Well", adds: [{ type: "water" }] },
+    { minLevel: 50, maxLevel: 100, name: "Mines", adds: [{ type: "rock" }, { type: "steel" }] },
+    { minLevel: 20, maxLevel: 100, name: "Ruins", adds: [{ type: "rock" }, { type: "ghost", amount: 0.1 }] },
+    { minLevel: 5, maxLevel: 100, name: "Well", adds: [{ type: "water" }] },
     { minLevel: 1, maxLevel: 100, name: "Tower", adds: [{ type: "normal" }] },
-    { minLevel: 1, maxLevel: 100, name: "Island", adds: [{ type: "water" }] },
+    { minLevel: 5, maxLevel: 100, name: "Island", adds: [{ type: "water" }] },
     { minLevel: 1, maxLevel: 100, name: "Chamber", adds: [{ type: "normal" }] },
     { minLevel: 1, maxLevel: 100, name: "Chasm", adds: [{ type: "ground" }] },
-    { minLevel: 1, maxLevel: 100, name: "Islands", adds: [{ type: "water" }] },
+    { minLevel: 5, maxLevel: 100, name: "Islands", adds: [{ type: "water" }] },
     { minLevel: 1, maxLevel: 100, name: "City", adds: [{ type: "normal" }] },
     { minLevel: 1, maxLevel: 100, name: "River", adds: [{ type: "water" }] },
-    { minLevel: 1, maxLevel: 100, name: "Lake", adds: [{ type: "water" }] },
+    { minLevel: 5, maxLevel: 100, name: "Lake", adds: [{ type: "water" }] },
     { minLevel: 1, maxLevel: 100, name: "Mountains", adds: [{ type: "ground" }, { type: "rock" }, { type: "grass" }] },
     { minLevel: 1, maxLevel: 100, name: "Forest", adds: [{ type: "grass" }, { type: "bug" }] },
-    { minLevel: 1, maxLevel: 100, name: "Bay", adds: [{ type: "water" }, { type: "flying" }] },
+    { minLevel: 5, maxLevel: 100, name: "Bay", adds: [{ type: "water" }, { type: "flying" }] },
     { minLevel: 1, maxLevel: 100, name: "Ranch", adds: [{ type: "normal" }, { type: "grass" }] },
-    { minLevel: 1, maxLevel: 100, name: "Complex", adds: [{ type: "poison" }] },
+    { minLevel: 10, maxLevel: 100, name: "Complex", adds: [{ type: "poison" }] },
     { minLevel: 1, maxLevel: 100, name: "Room", adds: [{ type: "normal" }] },
-    { minLevel: 1, maxLevel: 100, name: "Mansion", adds: [{ type: "normal" }, { type: "electric" }] },
+    { minLevel: 10, maxLevel: 100, name: "Mansion", adds: [{ type: "normal" }, { type: "electric" }] },
     { minLevel: 1, maxLevel: 100, name: "Beach", adds: [{ type: "water" }, { type: "normal" }] },
     { minLevel: 1, maxLevel: 100, name: "Expansion", adds: [{ type: "ground" }, { type: "grass" }] },
-    { minLevel: 1, maxLevel: 100, name: "Falls", adds: [{ type: "water" }, { type: "flying" }] },
+    { minLevel: 5, maxLevel: 100, name: "Falls", adds: [{ type: "water" }, { type: "flying" }] },
 ];
 var replaceables = [
     { replace: "{any}", arr: pathSufixes },
@@ -373,8 +374,8 @@ var Main = /** @class */ (function () {
                             nr: nr,
                             timer: 0,
                             level: 1,
-                            x: null,
-                            y: null,
+                            x: 0,
+                            y: 0,
                             isBall: true,
                             isOpened: false
                         });
@@ -498,7 +499,7 @@ var Main = /** @class */ (function () {
                         this.pathPanel = new PathPanel(this, loadedData);
                         this.pathPanel.init();
                         this.pathPanel.update();
-                        this.stepperId = setInterval(function () { return _this.step(); }, 1000);
+                        this.stepperId = setInterval(function () { return _this.step(); }, 250);
                         return [2 /*return*/];
                 }
             });
@@ -692,7 +693,6 @@ var ManaPanel = /** @class */ (function () {
     return ManaPanel;
 }());
 var PathPanel = /** @class */ (function () {
-    // get nextTarget() { return Math.floor((4 + Math.pow(this.level / 2, 1.1)) / 2); }
     function PathPanel(main, loadedData) {
         this.main = main;
         this.knownTypes = {};
@@ -701,6 +701,11 @@ var PathPanel = /** @class */ (function () {
             this.currentPath = loadedData.currentPath;
         }
     }
+    Object.defineProperty(PathPanel.prototype, "nextAmount", {
+        get: function () { return Math.floor((4 + Math.pow(this.completedPaths / 2, 1.1)) / 2); },
+        enumerable: false,
+        configurable: true
+    });
     PathPanel.prototype.init = function () {
         this.title = $('<div id="title"></div>');
         var top = $('<div id="top"></div>');
@@ -732,7 +737,6 @@ var PathPanel = /** @class */ (function () {
                 _this.knownTypes[x] = true;
         }); });
         if ((!this.currentPath || !this.currentPath.wilds.find(function (x) { return x.value < x.maxValue; })) && !this.possiblePaths) {
-            this.completedPaths++;
             this.makePossiblePaths();
             this.main.saveAll();
         }
@@ -785,9 +789,6 @@ var PathPanel = /** @class */ (function () {
             }
         });
     };
-    PathPanel.prototype.getRandomAffix = function () {
-        return pathPrefixes[Math.floor(Math.random() * pathPrefixes.length)];
-    };
     PathPanel.prototype.addToPossiblePath = function (path, _a) {
         var type = _a.type, amount = _a.amount;
         var found = path.parts.filter(function (x) { return x.type === type; });
@@ -824,10 +825,15 @@ var PathPanel = /** @class */ (function () {
     PathPanel.prototype.makePossiblePath = function () {
         var _this = this;
         var path = { name: "", parts: [] };
+        var possiblePrefixes = pathPrefixes.filter(function (x) { return _this.completedPaths >= x.minLevel; });
         console.log("---- making possible path ----");
         var i = 0;
+        var attempts = 0;
         do {
-            var affix = this.getRandomAffix();
+            attempts++;
+            var affix = Util.randomFromArray(possiblePrefixes);
+            if (!affix)
+                continue;
             path.name = affix.name;
             affix.adds.forEach(function (add) { return _this.addToPossiblePath(path, add); });
             console.log(" > start with ".concat(affix.name, " \u2192 ").concat(JSON.stringify(affix.adds.map(function (x) { return x.type + "(" + (x.amount ? x.amount : 1) + ")"; }))));
@@ -840,14 +846,18 @@ var PathPanel = /** @class */ (function () {
                     var replaceable = replaceables[i_1];
                     if (path.name.includes(replaceable.replace)) {
                         i_1 = replaceables.length;
-                        var newAffix = Util.randomFromArray(replaceable.arr);
+                        var newAffix = Util.randomFromArray(replaceable.arr.filter(function (x) { return _this.completedPaths >= x.minLevel; }));
                         path.name = path.name.replace(replaceable.replace, newAffix.name);
                         newAffix.adds.forEach(function (add) { return _this.addToPossiblePath(path, add); });
                         console.log(" > adding ".concat(newAffix.name, " \u2192 ").concat(JSON.stringify(newAffix.adds.map(function (x) { return x.type + "(" + (x.amount ? x.amount : 1) + ")"; }))));
                     }
                 }
             }
-        } while (path.parts.length == 0);
+        } while (path.parts.length == 0 && attempts < 1000);
+        if (!path.name)
+            path.name = "Untravelled Path";
+        if (path.parts.length === 0)
+            path.parts = [{ amount: 1, type: "normal" }];
         this.recalculatePartsOfPath(path);
         return path;
     };
@@ -878,6 +888,7 @@ var PathPanel = /** @class */ (function () {
     };
     PathPanel.prototype.choosePath = function (pp) {
         var _this = this;
+        this.completedPaths++;
         this.possiblePaths = undefined;
         this.possiblePathsDiv.remove();
         this.possiblePathsDiv = undefined;
@@ -900,7 +911,7 @@ var PathPanel = /** @class */ (function () {
     };
     PathPanel.prototype.addWild = function (types, isUnknown) {
         console.log(types + " is " + isUnknown);
-        var wild = { types: types, maxValue: 4, value: 0, isUnknown: isUnknown };
+        var wild = { types: types, maxValue: 20 + this.nextAmount, value: 0, isUnknown: isUnknown };
         this.currentPath.wilds.push(wild);
     };
     PathPanel.prototype.addProgress = function (type) {
@@ -1120,13 +1131,21 @@ var PokeCard = /** @class */ (function () {
         this.progressDiv.css('background', "conic-gradient(white ".concat(n, "%, rgb(55, 55, 61) 0)"));
     };
     PokeCard.prototype.createManaGainAnimation = function (type) {
-        var anim = $("<img class=\"anim_manaGain\" src=\"./assets/types/".concat(type, ".png\">"));
-        var pos = this.div.position();
-        anim.css({ top: pos.top + 32, left: pos.left + 32 });
+        var anim = $("<img class=\"mana\" src=\"./assets/types/".concat(type, ".png\">"));
+        var pos = this.div.offset();
+        anim.css({ top: pos.top + 50, left: pos.left + 50 });
+        var intervalId, lifetime = 100, vx = -.5 + Math.random(), vy = -.5 + Math.random();
+        intervalId = setInterval(function () {
+            if (lifetime <= 0) {
+                clearInterval(intervalId);
+                anim.remove();
+            }
+            else {
+                lifetime--;
+                anim.css({ top: pos.top + 50 + vx * (100 - lifetime), left: pos.left + 50 + vy * (100 - lifetime) });
+            }
+        }, 1000 / 60);
         $("body").append(anim);
-        setTimeout(function () {
-            anim.remove();
-        }, 1000);
     };
     return PokeCard;
 }());
@@ -1142,7 +1161,7 @@ var Pokemon = /** @class */ (function () {
     Object.defineProperty(Pokemon.prototype, "maxTimer", {
         // get maxTimer(): number { return 5; };
         // get maxTimer(): number { return Math.floor(5 * Math.pow(this.level, 0.66666)) };
-        get: function () { return Math.pow(3, this.level - 1); },
+        get: function () { return 5 + Math.pow(3, this.level - 1); },
         enumerable: false,
         configurable: true
     });
@@ -1253,7 +1272,7 @@ var SavedData = /** @class */ (function () {
     SavedData.createNew = function () {
         return new SavedData([], // pokemon
         [], // pokedex
-        0, // paths done
+        1, // paths done
         undefined, // path,
         'none', // lock type
         0 // increase in finding new pokemon
@@ -1307,7 +1326,7 @@ var Smoke = /** @class */ (function () {
             _loop_2(i);
         }
     };
-    Smoke.frameLenght = 100;
+    Smoke.frameLenght = 40;
     Smoke.smokeFrames = [
         "assets/ui/smoke_1.png",
         "assets/ui/smoke_2.png",

@@ -222,13 +222,22 @@ class PokeCard {
     }
 
     createManaGainAnimation(type: PokeType) {
-        const anim = $(`<img class="anim_manaGain" src="./assets/types/${type}.png">`);
-        const pos = this.div.position();
-        anim.css({ top: pos.top + 32, left: pos.left + 32 });
+        const anim = $(`<img class="mana" src="./assets/types/${type}.png">`);
+        const pos = this.div.offset();
+        anim.css({ top: pos.top + 50, left: pos.left + 50 });
+
+        let intervalId: number, lifetime = 100, vx = -.5 + Math.random(), vy = -.5 + Math.random();
+        intervalId = setInterval(() => {
+            if (lifetime <= 0) {
+                clearInterval(intervalId);
+                anim.remove();
+            } else {
+                lifetime--;
+                anim.css({ top: pos.top + 50 + vx * (100 - lifetime), left: pos.left + 50 + vy * (100 - lifetime) });
+            }
+        }, 1000 / 60);
+
         $(`body`).append(anim);
-        setTimeout(() => {
-            anim.remove();
-        }, 1000);
 
     }
 }

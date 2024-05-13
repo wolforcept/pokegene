@@ -1,5 +1,5 @@
 class Smoke {
-    static frameLenght = 100;
+    static frameLenght = 40;
     static smokeFrames = [
         "assets/ui/smoke_1.png",
         "assets/ui/smoke_2.png",

@@ -26,7 +26,7 @@ class SavedData {
         return new SavedData(
             [], // pokemon
             [], // pokedex
-            0, // paths done
+            1, // paths done
             undefined, // path,
             'none', // lock type
             0 // increase in finding new pokemon

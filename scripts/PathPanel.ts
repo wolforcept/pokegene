@@ -47,7 +47,7 @@ class PathPanel {
     private possiblePathsDiv: JQuery<HTMLElement>;
     private knownTypes: { [key in PokeType]?: boolean } = {};
 
-    // get nextTarget() { return Math.floor((4 + Math.pow(this.level / 2, 1.1)) / 2); }
+    get nextAmount() { return Math.floor((4 + Math.pow(this.completedPaths / 2, 1.1)) / 2); }
 
     constructor(
         private main: Main,
@@ -102,7 +102,6 @@ class PathPanel {
         }));
 
         if ((!this.currentPath || !this.currentPath.wilds.find(x => x.value < x.maxValue)) && !this.possiblePaths) {
-            this.completedPaths++;
             this.makePossiblePaths();
             this.main.saveAll();
         }
@@ -162,10 +161,6 @@ class PathPanel {
 
     }
 
-    getRandomAffix() {
-        return pathPrefixes[Math.floor(Math.random() * pathPrefixes.length)];
-    }
-
     addToPossiblePath(path: PossiblePath, { type, amount }: Add) {
 
         const found = path.parts.filter(x => x.type === type);
@@ -204,11 +199,16 @@ class PathPanel {
     makePossiblePath(): PossiblePath {
         const path: PossiblePath = { name: "", parts: [] };
 
+        const possiblePrefixes = pathPrefixes.filter(x => this.completedPaths >= x.minLevel);
+
         console.log("---- making possible path ----")
         let i = 0;
+        let attempts = 0;
         do {
+            attempts++;
 
-            const affix = this.getRandomAffix();
+            const affix = Util.randomFromArray(possiblePrefixes);
+            if (!affix) continue;
             path.name = affix.name;
             affix.adds.forEach(add => this.addToPossiblePath(path, add));
             console.log(` > start with ${affix.name} → ${JSON.stringify(affix.adds.map(x => x.type + "(" + (x.amount ? x.amount : 1) + ")"))}`)
@@ -223,7 +223,7 @@ class PathPanel {
                     const replaceable = replaceables[i];
                     if (path.name.includes(replaceable.replace)) {
                         i = replaceables.length;
-                        const newAffix = Util.randomFromArray(replaceable.arr);
+                        const newAffix = Util.randomFromArray(replaceable.arr.filter(x => this.completedPaths >= x.minLevel));
                         path.name = path.name.replace(replaceable.replace, newAffix.name);
                         newAffix.adds.forEach(add => this.addToPossiblePath(path, add));
                         console.log(` > adding ${newAffix.name} → ${JSON.stringify(newAffix.adds.map(x => x.type + "(" + (x.amount ? x.amount : 1) + ")"))}`)
@@ -231,7 +231,10 @@ class PathPanel {
                 }
             }
 
-        } while (path.parts.length == 0)
+        } while (path.parts.length == 0 && attempts < 1000)
+
+        if (!path.name) path.name = "Untravelled Path";
+        if (path.parts.length === 0) path.parts = [{ amount: 1, type: "normal" }];
 
         this.recalculatePartsOfPath(path);
         return path;
@@ -265,6 +268,7 @@ class PathPanel {
     }
 
     choosePath(pp: PossiblePath) {
+        this.completedPaths++;
         this.possiblePaths = undefined;
         this.possiblePathsDiv.remove();
         this.possiblePathsDiv = undefined;
@@ -290,7 +294,7 @@ class PathPanel {
 
     addWild(types: Array<PokeType>, isUnknown: boolean) {
         console.log(types + " is " + isUnknown)
-        const wild: Wild = { types, maxValue: 4, value: 0, isUnknown };
+        const wild: Wild = { types, maxValue: 20 + this.nextAmount, value: 0, isUnknown };
         this.currentPath.wilds.push(wild);
     }
 
