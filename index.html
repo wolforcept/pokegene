@@ -7,10 +7,20 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="./icon.png">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.min.css">
     <script src="lib/jquery-3.7.1.min.js"></script>
     <script src="lib/jquery-ui.min.js"></script>
     <script src="lib/jquery.ui.touch-punch.min.js"></script>
+    <script>
+        window.addEventListener('resize', onResize, true);
+        function onResize() {
+            if (screen.availHeight > screen.availWidth && !$('html').hasClass('portrait'))
+                $('html').addClass('portrait');
+            if (screen.availHeight < screen.availWidth && $('html').hasClass('portrait'))
+                $('html').removeClass('portrait');
+        }
+        onResize()
+    </script>
     <script src="scripts/game.js"></script>
 </head>
 
@@ -20,6 +30,7 @@
         setTimeout(() => {
             $("body").removeClass("starting");
         }, 1000);
+
     </script>
 </body>
 

@@ -7,9 +7,10 @@ interface PokemonStaticData {
 class StaticData {
 
     static typesByPokemon: Array<Array<PokeType>>;
-    static pokemonsByType: any;
-    static evolutionsByPokemon: any;
+    static pokemonsByType: { [key in PokeType]: Array<number> };
+    static evolutionsByPokemon: Array<null | Array<number>>;
     static prevolutionsByPokemon: Array<number | null>;
+    static rarityByPokemon: Array<number>;
 
     static async load() {
         console.log("loading static data...")
@@ -31,6 +32,10 @@ class StaticData {
             .then((response) => response.json())
             .then((json) => this.prevolutionsByPokemon = json);
         console.log({ prevolutionsByPokemon: this.prevolutionsByPokemon });
+        await fetch('../assets/data/rarityByPokemon.json')
+            .then((response) => response.json())
+            .then((json) => this.rarityByPokemon = json);
+        console.log({ rarityByPokemon: this.rarityByPokemon });
         // console.log(pokemonsByType)
         console.log("loading static data finished")
     }

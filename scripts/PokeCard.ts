@@ -1,19 +1,5 @@
 var lastDivGrabbed: JQuery<HTMLElement>;
 
-const levelStars = [
-    [],
-    [], // level 1 <- starting level
-    ["bronze"],
-    ["bronze", "bronze"],
-    ["bronze", "bronze", "bronze"],
-    ["silver"],
-    ["silver", "silver"],
-    ["silver", "silver", "silver"],
-    ["gold"],
-    ["gold", "gold"],
-    ["gold", "gold", "gold"],
-]
-
 class PokeCard {
     // open() {
     //     // this.isOpened = true;
@@ -24,8 +10,10 @@ class PokeCard {
     //     }, 750)
     // }
 
-    private div: JQuery<HTMLElement>;
+    div: JQuery<HTMLElement>;
+    private progressDiv: JQuery<HTMLElement>;
     private stars: JQuery<HTMLElement>;
+    pokeballImage: JQuery<HTMLElement>;
     id = (Math.random() + 1).toString(36).substring(7) + (Math.random() + 1).toString(36).substring(7);
     x: number;
     y: number;
@@ -40,7 +28,6 @@ class PokeCard {
     constructor(
         private pokemon: Pokemon,
         private onClick: () => void,
-        private onHoldClick: () => void,
         private onDrop: (idHeld: string, idDropped: string) => void,
         savedData: SavedPokemon
     ) {
@@ -55,42 +42,54 @@ class PokeCard {
 
     init() {
         const pokemon = this.pokemon;
-        this.div = $(`<div class="pokemon ${this.isOpened ? "" : "closed"} ${this.isBall ? "ball" : ""}"></div>`);
+        this.div = $(`<div class="pokemon ${pokemon.mainType === 'ghost' || pokemon.secondType === 'ghost' ? "ghost" : ""} ${this.isOpened ? "" : "closed"} ${this.isBall ? "" : "showExtraInfo"}"></div>`);
         const div = this.div;
 
-        div.css('background-color', "#" + Colors[pokemon.mainType][0]);
+        // div.css('background-color', "#" + Colors[pokemon.mainType][0]);
         div.attr('id', this.id);
 
-        // name
-        const name = $(`<div class="pokemonName name">${pokemon.name}</div>`);
-
-        // number
-        const number = $(`<div class="number">#${pokemon.nr}</div>`);
-
-        // types
-        const typeDivs = pokemon.types.map(type => this.makeTypeDiv(type));
-        const typesDiv = $(`<div class="typesDiv"></div>`);
-        typeDivs.forEach(t => typesDiv.append(t));
-
         // pokemon image
-        const pokemonImage = $(`<div class="pokemonImage"><img class="image" src="assets/pokemons/${pokemon.nr}.png"></div>`)
+        const pokemonImage = $(`<div class="pokemonImage"><img class="image" src="assets/pokemons/${pokemon.nr}.png" title="${pokemon.starsString} ${pokemon.name}"></div>`)
+
+        // stars
         this.stars = $(`<div class="stars"></div>`);
-        pokemonImage.append(this.stars);
         this.updateStars();
 
-        // pokeball image
-        const pokeballImage = $(`<img class="pokeballImage" src="assets/items/pokeball.png">`)
-        div.append(pokeballImage);
+        // progress bar
+        this.progressDiv = $(`<div class="progress"></div>`);
+
+        // main image and colors
+        const imageAndColorsDiv = $(`<div class="imageAndColors"></div>`);
+        imageAndColorsDiv.append(pokemonImage);
+        const color = Colors[this.pokemon.mainType];
+        const color2 = Colors[this.pokemon.types[1] ?? this.pokemon.mainType];
+        const gradient = `linear-gradient(-45deg, #${color2[0]} 49.9%, #${color[0]} 50%), linear-gradient(-45deg, #${color2[0]} 49.9%, #${color[0]} 50%)`;
+        imageAndColorsDiv.css('background', gradient);
+
+        // extra info
+        const name = $(`<div class="pokemonName name">${pokemon.name}</div>`);
+        const number = $(`<div class="number">#${pokemon.nr}</div>`);
+        const typesDiv = $(`<div class="typesDiv"></div>`);
+        const typeDivs = pokemon.types.map(type => this.makeTypeDiv(type));
+        typeDivs.forEach(t => typesDiv.append(t));
 
         const topDiv = $(`<div class="topDiv"></div>`);
-        topDiv.append(name);
         topDiv.append(number);
+        topDiv.append(name);
         div.append(topDiv);
 
-        const botDiv = $(`<div class="botDiv"></div>`);
-        botDiv.append(typesDiv);
-        botDiv.append(pokemonImage);
-        div.append(botDiv);
+        const extraInfo = $(`<div class="extraInfo"></div>`);
+        extraInfo.append(topDiv);
+        extraInfo.append(typesDiv);
+
+        if (!this.isOpened)
+            this.pokeballImage = $(`<img class="pokeballImage" src="assets/items/pokeball.png"></div>`)
+
+        div.append(this.stars);
+        div.append(imageAndColorsDiv);
+        div.append(this.progressDiv);
+        div.append(extraInfo);
+        div.append(this.pokeballImage);
         this.addToBody();
     }
 
@@ -119,25 +118,28 @@ class PokeCard {
         if (this.wasDragged) return;
 
         if (!this.isOpened) {
-            this.div.find(".pokemonImage").addClass("anim_becomingVisible");
-            this.div.find(".pokeballImage").addClass("anim_pokeballOpening");
+            // this.div.find(".pokemonImage").addClass("anim_becomingVisible");
+            // this.div.find(".pokeballImage").addClass("anim_pokeballOpening");
             setTimeout(() => {
                 this.div.removeClass("closed");
-                this.div.find(".pokemonImage").removeClass("anim_becomingVisible");
-                this.div.find(".pokeballImage").removeClass("anim_pokeballOpening");
-                this.toggleBall();
-            }, 1000);
+                //     this.div.find(".pokemonImage").removeClass("anim_becomingVisible");
+                //     this.div.find(".pokeballImage").removeClass("anim_pokeballOpening");
+                // // this.toggleBall();
+            }, 300);
+            Smoke.make(this.div.offset());
             this.isOpened = true;
             return;
         }
 
         const now = Date.now();
         if (now - this.lastClick < 200) {
-            this.toggleBall();
+            this.toggleExtraInfo();
             this.lastClick = 0;
         }
-        else
+        else {
             this.lastClick = now;
+            this.onClick();
+        }
     }
 
     _onDrag(event: JQueryUI.DraggableEventUIParams) {
@@ -153,27 +155,21 @@ class PokeCard {
 
     makeTypeDiv(type: PokeType): JQuery<HTMLElement> {
         const name = $(`<div class="name">${type}</div>`)
-        const image = $(`<img class="typeImage" src="assets/types/${type}.png" class="typeImage">`);
+        const image = $(`<img class="typeImage" src="assets/types/${type}.png" title="${type}" class="typeImage">`);
 
         const div = $(`<div class="type"></div>`);
-        div.append(name);
         div.append(image);
+        div.append(name);
         return div;
     }
 
-    toggleBall() {
-        if (!this.div.hasClass('ball')) {
-            // this.div.removeClass('card');
-            this.div.addClass('ball');
-            this.div.addClass('anim_cardClosing')
-            setTimeout(() => this.div.removeClass('anim_cardClosing'), 1000);
-            this.isBall = true;
-        } else {
-            this.div.removeClass('ball');
-            // this.div.addClass('card');
-            // this.div.addClass('anim_cardOpening')
-            // setTimeout(() => this.div.removeClass('anim_cardOpening'), 1000);
+    toggleExtraInfo() {
+        if (!this.div.hasClass('showExtraInfo')) {
+            this.div.addClass('showExtraInfo');
             this.isBall = false;
+        } else {
+            this.div.removeClass('showExtraInfo');
+            this.isBall = true;
         }
         this.updateFilled();
     }
@@ -194,28 +190,25 @@ class PokeCard {
         }, 1000 / 60)
     }
 
+    isDraggable() {
+        return !this.enteringIntervalId &&
+            (
+                (this.isBall && (this.pokemon.main.lockType != 'ball' && this.pokemon.main.lockType != 'hard'))
+                || (!this.isBall && (this.pokemon.main.lockType != 'card' && this.pokemon.main.lockType != 'hard'))
+            )
+            ;
+    }
+
     addToBody() {
         $("body").append(this.div)
-        if (!this.x && !this.y) {
-            if (!this.isOpened) {
-                this.throwInPokeball();
-            } else {
-                this.div.css('left', 0)
-                this.div.css('top', 0)
-            }
-        } else {
-            this.div.css('left', this.x)
-            this.div.css('top', this.y)
-        }
-        this.div.css('position', 'absolute')
-        this.div.draggable({ drag: ({ }, event) => { this._onDrag(event); return !this.enteringIntervalId; } });
+        this.div.css('left', this.x)
+        this.div.css('top', this.y)
+        this.div.draggable({ drag: ({ }, event) => { this._onDrag(event); return this.isDraggable(); } });
         this.div.droppable({ drop: (event1, event2) => this._onDrop(event1, event2) });
-        this.div.on('click', () => this.onClick());
+        // this.div.on('click', () => this.onClick());
         this.div.on('mousedown', () => this._onMouseDown());
         this.div.on('mouseup', () => this._onMouseUp());
         // this.div.on('mouseleave', () => this._onMouseLeave());
-        // if (this.isBall)
-        //     this.toggleBall();
         this.updateFilled();
     }
 
@@ -224,28 +217,8 @@ class PokeCard {
     }
 
     updateFilled() {
-        const color = Colors[this.pokemon.mainType];
-        const color2 = Colors[this.pokemon.types[1] ?? this.pokemon.mainType];
         const n = 100 * this.pokemon.timer / this.pokemon.maxTimer;
-
-        if (this.div.hasClass('ball')) {
-
-            const gradient1 = `radial-gradient(closest-side, #${color[0]} 89%, transparent 90% 100%), conic-gradient(white ${n}%, #${color[0]} 0)`;
-            const gradient2 = `linear-gradient(-45deg, #${color2[0]} 49.9%, #${color[0]} 50%)`;
-            const gradient3 = `radial-gradient(closest-side, #${color[0]} 89%, transparent 90% 100%), conic-gradient(white ${n}%, #${color[0]} 0), linear-gradient(-45deg, #${color2[0]} 49.9%, #${color[0]} 50%)`;
-            this.div.css('background', gradient3);
-
-        } else {
-
-            // const gradient = `#${color[0]}`;
-            const gradient = `linear-gradient(-45deg, #${color2[0]} 49.9%, #${color[0]} 50%), linear-gradient(-45deg, #${color2[0]} 49.9%, #${color[0]} 50%)`;
-            this.div.css('background', gradient);
-            this.div.find('.pokemonName').css('background', `linear-gradient(180deg,  #${color[0]} 85%, transparent 86%), 
-                                                     linear-gradient(90deg, white ${n}%, rgb(0,0,0,0.2) ${n + 1}%)`
-            );
-        }
-
-        // card.css("background", `radial-gradient(closest-side, #${color} 79%, transparent 80% 100%), conic-gradient(white ${n}%, transparent 0)`)
+        this.progressDiv.css('background', `conic-gradient(white ${n}%, rgb(55, 55, 61) 0)`);
     }
 
     createManaGainAnimation(type: PokeType) {

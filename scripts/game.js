@@ -1,14 +1,3 @@
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -45,45 +34,325 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
+var levelStars = [
+    [],
+    [], // level 1 <- starting level
+    /*2*/ ["bronze"],
+    /*3*/ ["bronze", "bronze"],
+    /*4*/ ["bronze", "bronze", "bronze"],
+    /*5*/ ["silver"],
+    /*6*/ ["silver", "silver"],
+    /*7*/ ["silver", "silver", "silver"],
+    /*8*/ ["gold"],
+    /*9*/ ["gold", "gold"],
+    /*10*/ ["gold", "gold", "gold"],
+];
+var ColorsAny = ['FFFFFF', '000000BB'];
 var Colors = {
-    'normal': ['d5d5d5', '000000BB'],
-    'grass': ['5fdb83', '000000BB'],
-    'poison': ['c276cd', '000000BB'],
-    'fire': ['ff7100', '000000BB'],
-    'flying': ['5b73db', '000000BB'],
-    'water': ['60ecff', '000000BB'],
-    'bug': ['d1ff00', '000000BB'],
-    'electric': ['ffe600', '000000BB'],
-    'ground': ['c77e64', '000000BB'],
-    'fairy': ['ffa0df', '000000BB'],
-    'fighting': ['ff175c', '000000BB'],
-    'psychic': ['ff2424', '000000BB'],
-    'rock': ['c1aa46', '000000BB'],
-    'steel': ['bfdbda', '000000BB'],
-    'ice': ['91fff8', '000000BB'],
-    'ghost': ['aa6fbbb8', 'FFFFFF'],
-    'dragon': ['009aff', '000000BB'],
-    'dark': ['161520', 'FFFFFFBB'],
+    'normal': ['d5d5d5', 'd5d5d5BB'],
+    'grass': ['5fdb83', '5fdb83BB'],
+    'poison': ['c276cd', 'c276cdBB'],
+    'fire': ['ff5027', 'ff5027BB'],
+    'flying': ['5b73db', '5b73dbBB'],
+    'water': ['40ccff', '40ccffBB'],
+    'bug': ['d1ff00', 'd1ff00BB'],
+    'electric': ['ffe600', 'ffe600BB'],
+    'ground': ['c77e64', 'c77e64BB'],
+    'fairy': ['ffa0df', 'ffa0dfBB'],
+    'fighting': ['ff870d', 'ff870dBB'],
+    'psychic': ['ff5771', 'ff5771BB'],
+    'rock': ['c1aa46', 'c1aa46BB'],
+    'steel': ['678791', '678791BB'],
+    // 'steel': ['bfdbda', '000000BB'],
+    'ice': ['91fff8', '91fff8BB'],
+    'ghost': ['625d7c', '625d7cBB'],
+    'dragon': ['009aff', '009affBB'],
+    'dark': ['161520', '161520BB'],
 };
 var PokeTypes = Object.keys(Colors);
+var PokemonNumberByRegion = {
+    "Kanto": { from: 1, to: 151 },
+    "Johto": { from: 152, to: 251 },
+    "Hoenn": { from: 252, to: 386 },
+    "Sinnoh": { from: 387, to: 493 },
+    "Unova": { from: 494, to: 649 },
+    "Kalos": { from: 650, to: 721 },
+    "Alola": { from: 722, to: 809 },
+    "Galar": { from: 910, to: 905 },
+    "Paldea": { from: 906, to: 1025 },
+};
+var boatAffixes = [
+    { minLevel: 1, maxLevel: 100, name: "Anne", adds: [] },
+    { minLevel: 1, maxLevel: 100, name: "Aqua", adds: [] },
+    { minLevel: 1, maxLevel: 100, name: "Libra", adds: [] },
+    { minLevel: 1, maxLevel: 100, name: "Cactus", adds: [] },
+    { minLevel: 1, maxLevel: 100, name: "Libra", adds: [] },
+    { minLevel: 1, maxLevel: 100, name: "Prime", adds: [{ type: "fighting", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Tidal", adds: [] },
+    { minLevel: 20, maxLevel: 100, name: "Flower", adds: [{ type: "grass", amount: 2 }] },
+    { minLevel: 50, maxLevel: 100, name: "Royal", adds: [{ type: "dragon", amount: 0.5 }] },
+];
+var cityAffixes = [
+    { minLevel: 1, maxLevel: 100, name: "Accumula", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Alfornada", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Ambrette", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Anistar", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Anville", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Aquacorde", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Artazon", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Aspertia", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Azalea", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Ballonlea", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Black", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Blackthorn", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "CaboPoco", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Camphrier", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Canalave", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Cascarrafa", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Castelia", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Celadon", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Celestic", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Cerulean", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Cherrygrove", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Cianwood", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Circhester", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Cinnabar", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Guren", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Cortondo", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Coumarine", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Couriway", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Cyllage", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Dendemille", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Dewford", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Diamond", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Driftveil", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Ecruteak", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Eterna", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "EverGrande", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Fallarbor", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "FightArea", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Floaroma", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Floccesy", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Fortree", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Freezington", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Frontier", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Fuchsia", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Geosenge", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Goldenrod", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Hammerlocke", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Hau'oli", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Heahea", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Hearthome", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Hulbury", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Humilau", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Icirrus", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Iki", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Jubilife", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Jubilife", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Kiloude", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Konikoni", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Lacunosa", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Lavaridge", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Lavender", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Laverre", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Lentimas", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Levincia", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Littleroot", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Lilycove", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "LosPlatos", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Lumiose", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Mahogany", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Malie", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Mauville", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Medali", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Mesagoza", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Mistralton", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Montenevera", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Mossdeep", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Mossui", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Motostoke", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Nacrene", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "NewBark", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Nimbasa", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Nuvema", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Oldale", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Olivine", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Opelucid", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Oreburgh", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Pacifidlog", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Pallet", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Paniola", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Pastoria", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Pearl", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Petalburg", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Pewter", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Po", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "PortoMarinada", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Postwick", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "ResortArea", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Rustboro", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Saffron", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Sandgem", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Santalune", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Seafolk", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Shalour", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Slateport", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Snowbelle", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Snowpoint", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Solaceon", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Sootopolis", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Spikemuth", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Striaton", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Sunyshore", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Tapu", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Turffield", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Twinleaf", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Undella", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Vaniville", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Veilstone", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Verdanturf", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Vermilion", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Violet", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Virbank", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Viridian", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Wedgehurst", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Wyndon", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Zapapico", adds: [{ type: "normal", amount: 0.5 }] },
+];
+var mountainAffixes = [
+    { minLevel: 1, maxLevel: 100, name: "Chimney", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Moon", adds: [{ type: "fairy", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Avalanche", adds: [{ type: "water" }, { type: "ice", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Battle", adds: [{ type: "dragon", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Blaze", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Clear", adds: [] },
+    { minLevel: 1, maxLevel: 100, name: "Cleft", adds: [] },
+    { minLevel: 1, maxLevel: 100, name: "Freeze", adds: [{ type: "ice", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Green", adds: [{ type: "grass", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Horn", adds: [{ type: "normal" }, { type: "bug", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Lanakila", adds: [] },
+    { minLevel: 1, maxLevel: 100, name: "Mistral", adds: [{ type: "normal" }] },
+    { minLevel: 1, maxLevel: 100, name: "Molteau", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Mortar", adds: [] },
+    { minLevel: 1, maxLevel: 100, name: "Moonview", adds: [{ type: "fairy", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Pyre", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Snowfall", adds: [{ type: "ice", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Shady", adds: [{ type: "ghost", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Spirit", adds: [{ type: "ghost", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Steel", adds: [{ type: "steel", amount: 2 }] },
+];
+var pathPrefixes = [
+    { minLevel: 1, maxLevel: 100, name: "{city} {any}", adds: [{ type: "normal", amount: 0.5 }] },
+    { minLevel: 1, maxLevel: 100, name: "Cave of {any}", adds: [{ type: "rock" }, { type: "ground", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Meteor {any}", adds: [{ type: "fire" }, { type: "flying" }] },
+    { minLevel: 1, maxLevel: 100, name: "Magma {any}", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Venom {any}", adds: [{ type: "poison", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Warring {any}", adds: [{ type: "fighting", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Rocky {any}", adds: [{ type: "rock", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Fire {any}", adds: [{ type: "fire", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Bloom {any}", adds: [{ type: "grass", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Poison {any}", adds: [{ type: "poison", amount: 3 }] },
+    { minLevel: 1, maxLevel: 100, name: "Iron {any}", adds: [{ type: "steel", amount: 3 }] },
+    { minLevel: 1, maxLevel: 100, name: "Puzzle {any}", adds: [{ type: "psychic", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Sky {any}", adds: [{ type: "flying", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Ghost {any}", adds: [{ type: "ghost" }] },
+    { minLevel: 1, maxLevel: 100, name: "Snow {any}", adds: [{ type: "ice", amount: 3 }, { type: "water" }] },
+    { minLevel: 1, maxLevel: 100, name: "Clay {any}", adds: [{ type: "ground" }] },
+    { minLevel: 1, maxLevel: 100, name: "Rainbow {any}", adds: [{ type: "grass" }, { type: "psychic" }] },
+    { minLevel: 1, maxLevel: 100, name: "Twist {any}", adds: [{ type: "psychic", amount: 2 }, { type: "dragon", amount: 1 }] },
+    { minLevel: 1, maxLevel: 100, name: "Rock {any}", adds: [{ type: "rock", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Unknown {any}", adds: [{ type: "dark" }] },
+    { minLevel: 1, maxLevel: 100, name: "Giant {any}", adds: [{ type: "flying" }] },
+    { minLevel: 1, maxLevel: 100, name: "Ember {any}", adds: [{ type: "fire" }] },
+    { minLevel: 1, maxLevel: 100, name: "Frozen {any}", adds: [{ type: "ice" }] },
+    { minLevel: 1, maxLevel: 100, name: "Freezing {any}", adds: [{ type: "ice" }, { type: "water" }] },
+    { minLevel: 1, maxLevel: 100, name: "Glittering {any}", adds: [{ type: "fairy", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Grace {any}", adds: [{ type: "fairy" }] },
+    { minLevel: 1, maxLevel: 100, name: "Charged {any}", adds: [{ type: "electric" }] },
+    { minLevel: 1, maxLevel: 100, name: "Dark {any}", adds: [{ type: "dark", amount: 2 }, { type: "ghost" }] },
+    { minLevel: 1, maxLevel: 100, name: "Mirage {any}", adds: [{ type: "ghost" }] },
+    { minLevel: 1, maxLevel: 100, name: "Great {any}", adds: [{ type: "flying" }] },
+    { minLevel: 1, maxLevel: 100, name: "Ice {any}", adds: [{ type: "ice", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Dragon {any}", adds: [{ type: "dragon", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Mt {mt}", adds: [{ type: "normal", amount: 0.5 }], final: true },
+    { minLevel: 1, maxLevel: 100, name: "S.S. {boat}", adds: [{ type: "water" }], final: true },
+    { minLevel: 1, maxLevel: 100, name: "Safari Zone", adds: [{ type: "flying" }, { type: "grass" }, { type: "water" }, { type: "normal" }, { type: "poison" }, { type: "rock" }, { type: "ground" }], final: true },
+    { minLevel: 1, maxLevel: 100, name: "{city} Grasslands", adds: [{ type: "grass" }, { type: "bug" }], final: true },
+    { minLevel: 1, maxLevel: 100, name: "Cape of {city}", adds: [{ type: "normal", amount: 0.3 }], final: true },
+    { minLevel: 1, maxLevel: 100, name: "Great {any} of {city}", adds: [] },
+];
+var pathSufixes = [
+    { minLevel: 1, maxLevel: 100, name: "{any} of {any}", adds: [] },
+    { minLevel: 1, maxLevel: 100, name: "{any} and {any}", adds: [] },
+    { minLevel: 1, maxLevel: 100, name: "Ring", adds: [{ type: "fighting" }] },
+    { minLevel: 1, maxLevel: 100, name: "Arena", adds: [{ type: "fighting", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Blight", adds: [{ type: "poison", amount: 2 }, { type: "ghost", amount: 2 }] },
+    { minLevel: 1, maxLevel: 100, name: "Swamp", adds: [{ type: "poison", amount: 3 }] },
+    { minLevel: 1, maxLevel: 100, name: "Pass", adds: [{ type: "normal" }, { type: "fighting" }] },
+    { minLevel: 1, maxLevel: 100, name: "Stone", adds: [{ type: "rock" }] },
+    { minLevel: 1, maxLevel: 100, name: "Hill", adds: [{ type: "normal" }, { type: "grass" }, { type: "bug" }] },
+    { minLevel: 1, maxLevel: 100, name: "Pillar", adds: [{ type: "grass" }] },
+    { minLevel: 1, maxLevel: 100, name: "Settlement", adds: [{ type: "grass" }] },
+    { minLevel: 1, maxLevel: 100, name: "Peak", adds: [{ type: "flying" }] },
+    { minLevel: 1, maxLevel: 100, name: "Mountain", adds: [{ type: "ground" }, { type: "rock" }] },
+    { minLevel: 1, maxLevel: 100, name: "Volcano", adds: [{ type: "fire" }, { type: "dragon" }] },
+    { minLevel: 1, maxLevel: 100, name: "Apex", adds: [{ type: "flying" }] },
+    { minLevel: 1, maxLevel: 100, name: "Ship", adds: [{ type: "water" }] },
+    { minLevel: 1, maxLevel: 100, name: "Ferry", adds: [{ type: "water" }] },
+    { minLevel: 1, maxLevel: 100, name: "Tree", adds: [{ type: "grass" }, { type: "bug" }] },
+    { minLevel: 1, maxLevel: 100, name: "Port", adds: [{ type: "water" }] },
+    { minLevel: 1, maxLevel: 100, name: "Canyon", adds: [{ type: "ground" }] },
+    { minLevel: 1, maxLevel: 100, name: "City", adds: [{ type: "normal" }] },
+    { minLevel: 1, maxLevel: 100, name: "Town", adds: [{ type: "normal" }] },
+    { minLevel: 1, maxLevel: 100, name: "Village", adds: [{ type: "normal" }] },
+    { minLevel: 1, maxLevel: 100, name: "Road", adds: [{ type: "normal" }] },
+    { minLevel: 1, maxLevel: 100, name: "Route", adds: [{ type: "normal" }] },
+    { minLevel: 1, maxLevel: 100, name: "Summit", adds: [{ type: "normal" }, { type: "flying" }] },
+    { minLevel: 1, maxLevel: 100, name: "Tunnel", adds: [{ type: "rock" }, { type: "ground" }] },
+    { minLevel: 1, maxLevel: 100, name: "Ruins", adds: [{ type: "rock" }, { type: "ghost", amount: 0.1 }] },
+    { minLevel: 1, maxLevel: 100, name: "Well", adds: [{ type: "water" }] },
+    { minLevel: 1, maxLevel: 100, name: "Tower", adds: [{ type: "normal" }] },
+    { minLevel: 1, maxLevel: 100, name: "Island", adds: [{ type: "water" }] },
+    { minLevel: 1, maxLevel: 100, name: "Chamber", adds: [{ type: "normal" }] },
+    { minLevel: 1, maxLevel: 100, name: "Chasm", adds: [{ type: "ground" }] },
+    { minLevel: 1, maxLevel: 100, name: "Islands", adds: [{ type: "water" }] },
+    { minLevel: 1, maxLevel: 100, name: "City", adds: [{ type: "normal" }] },
+    { minLevel: 1, maxLevel: 100, name: "River", adds: [{ type: "water" }] },
+    { minLevel: 1, maxLevel: 100, name: "Lake", adds: [{ type: "water" }] },
+    { minLevel: 1, maxLevel: 100, name: "Mountains", adds: [{ type: "ground" }, { type: "rock" }, { type: "grass" }] },
+    { minLevel: 1, maxLevel: 100, name: "Forest", adds: [{ type: "grass" }, { type: "bug" }] },
+    { minLevel: 1, maxLevel: 100, name: "Bay", adds: [{ type: "water" }, { type: "flying" }] },
+    { minLevel: 1, maxLevel: 100, name: "Ranch", adds: [{ type: "normal" }, { type: "grass" }] },
+    { minLevel: 1, maxLevel: 100, name: "Complex", adds: [{ type: "poison" }] },
+    { minLevel: 1, maxLevel: 100, name: "Room", adds: [{ type: "normal" }] },
+    { minLevel: 1, maxLevel: 100, name: "Mansion", adds: [{ type: "normal" }, { type: "electric" }] },
+    { minLevel: 1, maxLevel: 100, name: "Beach", adds: [{ type: "water" }, { type: "normal" }] },
+    { minLevel: 1, maxLevel: 100, name: "Expansion", adds: [{ type: "ground" }, { type: "grass" }] },
+    { minLevel: 1, maxLevel: 100, name: "Falls", adds: [{ type: "water" }, { type: "flying" }] },
+];
+var replaceables = [
+    { replace: "{any}", arr: pathSufixes },
+    { replace: "{boat}", arr: boatAffixes },
+    { replace: "{city}", arr: cityAffixes },
+    { replace: "{mt}", arr: mountainAffixes },
+];
 function start() {
     new Main();
 }
-var clear, addP, explore;
+var clear, addP, save, explore, exploreNew;
+function test(n, isNew) {
+    for (var i = 0; i < n; i++)
+        console.log(explore(1, ["grass"], isNew));
+}
 var Main = /** @class */ (function () {
     function Main() {
         var _this = this;
         this.pokemon = [];
+        this.pokedex = [];
         this.increaseInFindingNewPokemon = 0;
+        this.lockType = 'none';
+        // explorations = 0
+        this.saveCooldown = 0;
         this.load()
             .then(function (loadedData) {
             // const prevolutions = [];
@@ -119,11 +388,12 @@ var Main = /** @class */ (function () {
             }
         });
         clear = function () {
-            new SavedData(1, 0, [], {}).saveAll();
+            SavedData.createNew().saveAll();
             window.location.reload();
         };
-        addP = function (a) { return _this.addNewPokemon(a); };
-        explore = function () { return _this.explore(); };
+        addP = function (a) { return _this.addNewPokemon(a, 100, 100); };
+        save = function () { return _this.saveAll(); };
+        explore = function (lvl, types, isnew) { return Main.exploreNewPokemon(lvl, types, _this.pokemon.map(function (x) { return ({ nr: x.nr, type1: x.mainType, type2: x.secondType }); }), isnew); };
     }
     Main.prototype.load = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -138,7 +408,7 @@ var Main = /** @class */ (function () {
         });
     };
     Main.prototype.saveAll = function () {
-        new SavedData(this.manaPanel.level, this.questsDone, this.pokemon.map(function (pokemon) { return ({
+        new SavedData(this.pokemon.map(function (pokemon) { return ({
             x: pokemon.card.x,
             y: pokemon.card.y,
             isBall: pokemon.card.isBall,
@@ -146,10 +416,12 @@ var Main = /** @class */ (function () {
             nr: pokemon.nr,
             timer: pokemon.timer,
             isOpened: pokemon.card.isOpened
-        }); }), this.manaPanel.mana)
+        }); }), this.pokedex, 
+        // this.manaPanel.mana,
+        this.pathPanel.completedPaths, this.pathPanel.currentPath, this.lockType, this.increaseInFindingNewPokemon)
             .saveAll();
     };
-    Main.prototype.addNewPokemon = function (nr) {
+    Main.prototype.addNewPokemon = function (nr, x, y) {
         return __awaiter(this, void 0, void 0, function () {
             var pokemon;
             return __generator(this, function (_a) {
@@ -160,15 +432,16 @@ var Main = /** @class */ (function () {
                                 nr: nr,
                                 timer: 0,
                                 level: 1,
-                                x: null,
-                                y: null,
+                                x: x,
+                                y: y,
                                 isBall: true,
                                 isOpened: false,
                             })];
                     case 1:
                         _a.sent();
+                        this.pokedex[nr] = true;
                         this.pokemon.push(pokemon);
-                        return [2 /*return*/];
+                        return [2 /*return*/, pokemon];
                 }
             });
         });
@@ -176,11 +449,26 @@ var Main = /** @class */ (function () {
     Main.prototype.joinPokemon = function (pokemon1, id2) {
         var pokemon2 = this.pokemon.find(function (x) { return x.card.id === id2; });
         if (pokemon1 && pokemon2 && pokemon1.nr === pokemon2.nr && pokemon1.level === pokemon2.level && pokemon1.card.isOpened && pokemon2.card.isOpened) {
+            if (pokemon1.level === 10) {
+                var evNrs = StaticData.evolutionsByPokemon[pokemon1.nr];
+                if (evNrs !== null && evNrs.length > 0) {
+                    var newNr = Util.randomFromArray(evNrs);
+                    console.log("WILL EVOLVE: " + pokemon1.nr + " TO " + newNr);
+                    if (newNr > 0) {
+                        this.addNewPokemon(newNr, pokemon1.card.x, pokemon1.card.y);
+                        this.pokemon.splice(this.pokemon.indexOf(pokemon1), 1);
+                        pokemon1.card.remove();
+                        this.pokemon.splice(this.pokemon.indexOf(pokemon2), 1);
+                        pokemon2.card.remove();
+                        return;
+                    }
+                }
+            }
             // pokemon2.remove();
             this.pokemon.splice(this.pokemon.indexOf(pokemon2), 1);
             pokemon2.card.remove();
             pokemon1.level++;
-            pokemon1.timer = 0;
+            pokemon1.timer = pokemon1.maxTimer;
             pokemon1.card.animTempGrow();
             pokemon1.card.updateStars();
             pokemon1.card.updateFilled();
@@ -193,6 +481,8 @@ var Main = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        this.lockType = loadedData.lockType;
+                        this.increaseInFindingNewPokemon = loadedData.increaseInFindingNewPokemon;
                         loadTimes = [];
                         loadedData.pokemon.forEach(function (savedPokemon) {
                             var newPokemon = new Pokemon(_this, savedPokemon.nr, savedPokemon.timer, savedPokemon.level);
@@ -202,132 +492,192 @@ var Main = /** @class */ (function () {
                         return [4 /*yield*/, Promise.all(loadTimes)];
                     case 1:
                         _a.sent();
-                        this.manaPanel = new ManaPanel(this, loadedData);
-                        this.manaPanel.init();
-                        this.manaPanel.update();
+                        // this.manaPanel = new ManaPanel(this, loadedData);
+                        // this.manaPanel.init();
+                        // this.manaPanel.update();
+                        this.pathPanel = new PathPanel(this, loadedData);
+                        this.pathPanel.init();
+                        this.pathPanel.update();
                         this.stepperId = setInterval(function () { return _this.step(); }, 1000);
                         return [2 /*return*/];
                 }
             });
         });
     };
-    // explorations = 0
     Main.prototype.step = function () {
         this.pokemon.forEach(function (pokemon) {
             if (pokemon.card.isOpened)
                 pokemon.step();
         });
-        this.manaPanel.update();
-        this.saveAll();
-        // if (this.explorations === 0) {
-        //     this.explore();
-        //     this.explorations++;
-        // }
-        // console.log(this.manaPanel.mana);
-    };
-    Main.prototype.explore = function () {
-        var currLevel = this.manaPanel.level;
-        var manas = this.manaPanel.mana;
-        var orderedManas = PokeTypes.filter(function (type) { return manas[type] > 0; }).map(function (type) { return ({ type: type, mana: manas[type] }); }).sort(function (a, b) { return (b.mana - a.mana); });
-        // const orderedManasWithoutNormal = orderedManas.filter(({ type }) => type !== 'normal');
-        var sum = orderedManas.reduce(function (t, x) { return (t + x.mana); }, 0);
-        var currentPokemonWithCurrentMana = this.pokemon.filter(function (x) { return orderedManas.find(function (_a) {
-            var type = _a.type;
-            return type === x.mainType || type === x.secondType;
-        }); });
-        var currentPokemon = currentPokemonWithCurrentMana.map(function (x) { return ({ nr: x.nr, type1: x.mainType, type2: x.secondType }); });
-        currentPokemon = currentPokemon.filter(function (x, i) { return currentPokemon.findIndex(function (y) { return y.nr === x.nr; }) === i; });
-        // console.log({ currentPokemon });
-        // get new pokemon prob stats:
-        var max = 0.1;
-        var start = 0.3;
-        var growth = 100;
-        var getNewPokemonProb = (max - ((max - start) * (growth / (growth + currLevel))));
-        console.log("new pokemon prob = " + getNewPokemonProb);
-        var nr;
-        if (currentPokemon.length > 0 && Math.random() > getNewPokemonProb) {
-            nr = this.exploreCurrentPokemon(currentPokemon, sum);
-            // this.increaseInFindingNewPokemon++;
+        this.pathPanel.step();
+        this.pathPanel.update();
+        if (this.saveCooldown <= 0) {
+            this.saveAll();
+            this.saveCooldown = 60;
         }
         else {
-            nr = this.exploreNewPokemon(currentPokemon.map(function (x) { return x.nr; }), orderedManas);
-            // this.increaseInFindingNewPokemon = 0;
+            this.saveCooldown--;
         }
+    };
+    Main.prototype.explore = function (types, pos) {
+        var currLevel = Math.min(100, this.pathPanel.completedPaths);
+        // const manas = this.manaPanel.mana;
+        // const orderedManas = PokeTypes.filter(type => manas[type] > 0).map((type: PokeType) => ({ type, mana: manas[type] })).sort((a, b) => (b.mana - a.mana));
+        // const orderedManasWithoutNormal = orderedManas.filter(({ type }) => type !== 'normal');
+        // const sum = orderedManas.reduce((t, x) => (t + x.mana), 0)
+        // const currentPokemonWithType = this.pokemon.filter(x => orderedManas.find(({ type }) => type === x.mainType || type === x.secondType));
+        // let currentPokemon: Array<PokemonShort> = currentPokemonWithCurrentMana.map(x => ({ nr: x.nr, type1: x.mainType, type2: x.secondType }));
+        // currentPokemon = currentPokemon.filter((x, i) => currentPokemon.findIndex(y => y.nr === x.nr) === i);
+        console.log("WILL TRY TO GET A ".concat(types, " POKEMON"));
+        var currentPokemon = this.pokemon.filter(function (x) { return types.includes(x.mainType) || types.includes(x.secondType); }).map(function (x) { return ({ nr: x.nr, type1: x.mainType, type2: x.secondType }); });
+        console.log({ currentPokemon: currentPokemon });
+        // get new pokemon prob stats:
+        var max = 0.2;
+        var start = 0.3;
+        var growth = 100;
+        var getNewPokemonProb = (max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
+        console.log("new pokemon prob = " + getNewPokemonProb);
+        var nr = Main.exploreNewPokemon(currLevel, types, currentPokemon, /*can be new?*/ Math.random() < getNewPokemonProb);
         if (nr) {
-            this.addNewPokemon(nr);
-            this.manaPanel.level++;
-            this.manaPanel.removeAllMana();
+            this.startAddPokemonSequence(nr, pos);
+            // this.manaPanel.level++;
+            // this.manaPanel.removeAllMana();
         }
     };
-    Main.prototype.exploreCurrentPokemon = function (pokemon, totalMana) {
-        console.log("exploring current pokemon...");
-        var manas = this.manaPanel.mana;
-        var weights = pokemon.map(function (x) {
-            var _a;
-            var mana1 = manas[x.type1];
-            var mana2 = (_a = manas[x.type2]) !== null && _a !== void 0 ? _a : 0;
-            return (mana1 + mana2) / totalMana;
+    Main.prototype.startAddPokemonSequence = function (nr, posI) {
+        return __awaiter(this, void 0, void 0, function () {
+            var pokemon, vx, vy, gravity, lifetime, intervalId, intervalFunc;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.addNewPokemon(nr, posI.left, posI.top)];
+                    case 1:
+                        pokemon = (_a.sent()).card.div;
+                        vx = -4 + 8 * Math.random(), vy = -8 + Math.random() * 2, gravity = 0.6;
+                        lifetime = 30 + Math.random() * 10;
+                        intervalFunc = function () {
+                            var currPos = pokemon.offset();
+                            lifetime--;
+                            if (lifetime <= 0) {
+                                clearInterval(intervalId);
+                            }
+                            else {
+                                pokemon.css("left", currPos.left + vx);
+                                pokemon.css("top", currPos.top + vy);
+                                vy += gravity;
+                            }
+                        };
+                        intervalId = setInterval(intervalFunc, 1000 / 60);
+                        return [2 /*return*/];
+                }
+            });
         });
-        var num = Math.random();
-        var s = 0;
-        var lastIndex = weights.length - 1;
-        // console.log(weights, pokemon.map(x => x.nr));
-        for (var i = 0; i < lastIndex; ++i) {
-            s += weights[i];
-            if (num < s) {
-                return pokemon[i].nr;
-            }
-        }
-        return pokemon[lastIndex].nr;
     };
-    Main.prototype.exploreNewPokemon = function (currentNrs, manas2) {
-        var _a, _b;
-        var level = this.manaPanel.level;
-        var minNumber = (_b = (_a = Quests[this.questsDone - 1]) === null || _a === void 0 ? void 0 : _a.exploreNumber) !== null && _b !== void 0 ? _b : 1;
+    // exploreCurrentPokemon(pokemon: Array<PokemonShort>, totalMana: number): number {
+    //     console.log("exploring current pokemon...")
+    //     const manas = this.manaPanel.mana;
+    //     const weights = pokemon.map(x => {
+    //         const mana1 = manas[x.type1];
+    //         const mana2 = manas[x.type2] ?? 0;
+    //         return (mana1 + mana2) / totalMana;
+    //     })
+    //     const num = Math.random();
+    //     let s = 0;
+    //     const lastIndex = weights.length - 1;
+    //     // console.log(weights, pokemon.map(x => x.nr));
+    //     for (var i = 0; i < lastIndex; ++i) {
+    //         s += weights[i];
+    //         if (num < s) {
+    //             return pokemon[i].nr;
+    //         }
+    //     }
+    //     return pokemon[lastIndex].nr;
+    // }
+    Main.exploreNewPokemon = function (level, types, current, canBeNew) {
+        console.log("EXPLORING level:".concat(level, " types:").concat(types, " new:").concat(canBeNew));
+        var allPossible = [];
+        if (!canBeNew)
+            current.forEach(function (currPoke) { return allPossible.push(currPoke.nr); });
+        if (canBeNew || allPossible.length === 0)
+            types.forEach(function (type) { return StaticData.pokemonsByType[type].forEach(function (nr) { return allPossible.push(nr); }); });
+        if (allPossible.length === 0)
+            return 0;
+        allPossible.sort(function (a, b) { return Number(a) - Number(b); });
+        var _loop_1 = function (i) {
+            var nr_1 = allPossible[i];
+            var prevEvNr = StaticData.prevolutionsByPokemon[nr_1];
+            if (prevEvNr && !current.find(function (x) { return x.nr === nr_1; })) {
+                allPossible.splice(i, 1);
+                i--;
+            }
+            out_i_1 = i;
+        };
+        var out_i_1;
+        for (var i = 0; i < allPossible.length; i++) {
+            _loop_1(i);
+            i = out_i_1;
+        }
+        var tries = 0;
+        var nr = 0;
+        while (nr == 0 && tries < 10000) {
+            tries++;
+            var index = 0;
+            var skips = Math.floor(Math.abs(Util.gaussianRandom(level, level / 10)));
+            var initialSkipProb = this.getSkipProbability(level);
+            var skipProb = initialSkipProb;
+            while (skips > 0) {
+                var firstNr = allPossible[0];
+                var nextNr = allPossible[index + 1];
+                skips--;
+                if (Math.random() < skipProb) {
+                    index++;
+                    console.log("SKIPPED");
+                    skipProb = initialSkipProb;
+                }
+                else {
+                    skipProb *= 1.1;
+                }
+            }
+            nr = allPossible[Math.min(allPossible.length - 1, index)];
+        }
+        return nr;
+        // const minNumber = Quests[this.pathPanel.completedPaths - 1]?.exploreNumber ?? 1;
         // const searchLength = Math.floor(Math.abs(this.gaussianRandom(50, 10)));
-        var searchLength = Math.floor(Math.abs(this.gaussianRandom(50, 10 + level / 4)));
         // console.log({ minNumber, searchLength });
         // console.log("exploring new pokemon...")
-        var manas = __assign({}, this.manaPanel.mana);
-        if (level < 100)
-            manas.normal = (1 - .01 * level) * PokeTypes.map(function (x) { return manas[x]; }).reduce(function (max, x) { return x > max ? x : max; }, 0);
+        // const manas = { ...this.manaPanel.mana };
+        // if (level < 100)
+        //     manas.normal = (1 - .01 * level) * PokeTypes.map(x => manas[x]).reduce((max, x) => x > max ? x : max, 0);
         // console.log(manas);
-        var grabs = [];
-        var _loop_1 = function (i) {
-            var nr = minNumber + i;
-            if (nr < minNumber
-                || StaticData.prevolutionsByPokemon[nr] !== null
-                || StaticData.prevolutionsByPokemon[nr] > nr
-                || currentNrs.find(function (x) { return x === nr; }))
-                return "continue";
-            var types = StaticData.typesByPokemon[nr];
-            var str = 0;
-            types.forEach(function (type) { return str += manas[type]; });
-            grabs.push({ nr: nr, str: str });
-        };
-        for (var i = 0; i < searchLength; i++) {
-            _loop_1(i);
-        }
-        grabs.sort(function (a, b) { return b.str - a.str; });
-        // console.log(grabs);
-        var final = grabs[Math.min(grabs.length, Math.floor(Math.abs(this.gaussianRandom(0, 3))))];
-        return final.nr;
+        // const grabs: Array<{ nr: number, str: number }> = [];
+        // for (let i = 0; i < searchLength; i++) {
+        //     const nr = i;
+        //     if (StaticData.prevolutionsByPokemon[nr] !== null
+        //         || StaticData.prevolutionsByPokemon[nr] > nr
+        //         || currentNrs.find(x => x === nr)
+        //     ) continue;
+        //     const typesOfNewPokemon = StaticData.typesByPokemon[nr];
+        //     if (!Util.containsAny(typesOfNewPokemon, types))
+        //         continue;
+        //     let str = 0;
+        //     // types.forEach(type => str += manas[type]);
+        //     str += .1 * StaticData.rarityByPokemon[nr];
+        //     grabs.push({ nr, str })
+        // }
+        // grabs.sort((a, b) => b.str - a.str);
+        // // console.log(grabs);
+        // const final = grabs[Math.min(grabs.length, Math.floor(Math.abs(this.gaussianRandom(0, 3))))];
+        // return final.nr;
+    };
+    Main.getSkipProbability = function (level) {
+        return 0.001;
     };
     Main.prototype.getRandomPokemon = function () {
-        var nr = 1 + Math.abs(Math.floor(this.gaussianRandom(this.manaPanel.level / 5, 10 + this.manaPanel.level / 10)));
+        var level = this.pathPanel.completedPaths;
+        var nr = 1 + Math.abs(Math.floor(Util.gaussianRandom(level / 5, 10 + level / 10)));
         while (StaticData.prevolutionsByPokemon[nr] != null || StaticData.prevolutionsByPokemon[nr] > nr)
             nr--;
         return nr;
         // console.log(nr);
-    };
-    Main.prototype.gaussianRandom = function (mean, stdev) {
-        if (mean === void 0) { mean = 0; }
-        if (stdev === void 0) { stdev = 1; }
-        var u = 1 - Math.random(); // Converting [0,1) to (0,1]
-        var v = Math.random();
-        var z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-        // Transform to the desired mean and standard deviation:
-        return z * stdev + mean;
     };
     Main.prototype.downloadFile = function (name, data) {
         var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
@@ -337,87 +687,265 @@ var Main = /** @class */ (function () {
     return Main;
 }());
 var ManaPanel = /** @class */ (function () {
-    function ManaPanel(main, loadedData) {
-        var _this = this;
-        this.main = main;
-        this.mana = { 'normal': 0, 'grass': 0, 'poison': 0, 'fire': 0, 'flying': 0, 'water': 0, 'bug': 0, 'electric': 0, 'ground': 0, 'fairy': 0, 'fighting': 0, 'psychic': 0, 'rock': 0, 'steel': 0, 'ice': 0, 'ghost': 0, 'dragon': 0, 'dark': 0 };
-        this.level = 1;
-        if (loadedData) {
-            PokeTypes.forEach(function (type) { return _this.mana[type] = loadedData.mana[type]; });
-            this.level = loadedData.level;
-        }
+    function ManaPanel() {
     }
-    Object.defineProperty(ManaPanel.prototype, "nextTarget", {
-        get: function () { return Math.floor((4 + Math.pow(this.level / 2, 1.1)) / 2); },
-        enumerable: false,
-        configurable: true
-    });
-    ManaPanel.prototype.init = function () {
-        this.div = $('<div id="manaBar"></div>');
-        $('body').append(this.div);
-        this.update();
-        // TODO this.div.on('click', ()=>this.main.manaCli);
-    };
-    ManaPanel.prototype.update = function () {
-        var mana = this.mana;
-        var nextTarget = this.nextTarget;
-        // PokeTypes.forEach(type => sum += mana[type] ?? 0);
-        var percentPrev = 0;
-        var rollingSum = 0;
-        var gradientString = '';
-        var orderedTypes = __spreadArray([], PokeTypes, true).sort(function (a, b) { return mana[a] - mana[b]; });
-        orderedTypes.forEach(function (type) {
-            if (mana[type] && mana[type] > 0) {
-                rollingSum += mana[type];
-                var color = Colors[type][0];
-                var percent = Math.floor(100 * rollingSum / nextTarget);
-                gradientString += ", #".concat(color, " ").concat(percentPrev, "%, #").concat(color, " ").concat(percent, "%");
-                percentPrev = percent;
-            }
-        });
-        var gradient = "linear-gradient(90deg".concat(gradientString, ", #00000000 ").concat(percentPrev, "%, #00000000 100%)");
-        this.div.css('background', gradient);
-        this.div.html("".concat(rollingSum, " / ").concat(nextTarget));
-        if (rollingSum >= nextTarget) {
-            this.main.explore();
-        }
-        // manaBar.css('width', '500px');
-    };
-    ManaPanel.prototype.addMana = function (type, amount) {
-        if (amount === void 0) { amount = 1; }
-        if (!this.mana[type])
-            this.mana[type] = 0;
-        this.mana[type] += amount;
-        this.update();
-    };
-    ManaPanel.prototype.removeAllMana = function () {
-        var _this = this;
-        PokeTypes.forEach(function (type) { return _this.mana[type] = 0; });
-        this.update();
-    };
     return ManaPanel;
 }());
+var PathPanel = /** @class */ (function () {
+    // get nextTarget() { return Math.floor((4 + Math.pow(this.level / 2, 1.1)) / 2); }
+    function PathPanel(main, loadedData) {
+        this.main = main;
+        this.knownTypes = {};
+        if (loadedData) {
+            this.completedPaths = loadedData.completedPaths;
+            this.currentPath = loadedData.currentPath;
+        }
+    }
+    PathPanel.prototype.init = function () {
+        this.title = $('<div id="title"></div>');
+        var top = $('<div id="top"></div>');
+        top.append(this.title);
+        this.currentPathDiv = $('<div id="path"></div>');
+        // const leftButton = $('<div id="leftButton"></div>');
+        // leftButton.append(leftButtonImage);
+        // leftButton.on('click', leftButtonClick);
+        // const rightButton = $('<div id="rightButton"></div>');
+        // this.percents = $('<div id="percents"></div>');
+        // const percentsWrapper = $('<div id="percents_wrapper"></div>');
+        // percentsWrapper.append(this.percents);
+        // const bottom = $('<div id="manaBar_bottom"></div>');
+        // bottom.append(leftButton, percentsWrapper, rightButton);
+        // this.div = $('<div id="manaBar"></div>');
+        // this.div.append(top, bottom);
+        var wrapper = $('<div id="path_panel"></div>');
+        wrapper.append(top, this.currentPathDiv);
+        $('body').append(wrapper);
+        this.step();
+        this.update();
+        // this.createManaDisplay();
+        // TODO this.div.on('click', ()=>this.main.manaCli);
+    };
+    PathPanel.prototype.step = function () {
+        var _this = this;
+        this.main.pokemon.forEach(function (pokemon) { return pokemon.types.forEach(function (x) {
+            if (!_this.knownTypes[x])
+                _this.knownTypes[x] = true;
+        }); });
+        if ((!this.currentPath || !this.currentPath.wilds.find(function (x) { return x.value < x.maxValue; })) && !this.possiblePaths) {
+            this.completedPaths++;
+            this.makePossiblePaths();
+            this.main.saveAll();
+        }
+        if (this.possiblePaths && !this.possiblePathsDiv) {
+            this.makePossiblePathsDiv();
+        }
+    };
+    PathPanel.prototype.update = function () {
+        var _this = this;
+        if (!this.currentPath)
+            return;
+        this.title.html("".concat(this.completedPaths, " - ").concat(this.currentPath.name));
+        // this.title.html(`${this.currentPath.region} - ${this.completedPaths} - ${this.currentPath.name}`);
+        this.currentPath.wilds.forEach(function (wild) {
+            if (!wild.div && wild.value < wild.maxValue) {
+                var div = $("<div class=\"wild\"><img class=\"pokeball\" src=\"../assets/items/pokeball.png\"></div>");
+                var progress = $("<div class=\"progress\"></div>");
+                var progressWrapper = $("<div class=\"progress_wrapper\"></div>");
+                progressWrapper.append(progress);
+                var typeImages_1 = $("<div class=\"type_images\"></div>");
+                if (wild.isUnknown)
+                    typeImages_1.append($("<img src=\"./assets/types/any.png\" title=\"unknown type\" height=\"32px\">"));
+                else
+                    wild.types.forEach(function (type) {
+                        var typeImg = $("<img src=\"./assets/types/".concat(type, ".png\" title=\"").concat(type, "\" height=\"32px\">"));
+                        typeImages_1.append(typeImg);
+                    });
+                div.append(typeImages_1);
+                div.append(progressWrapper);
+                div.appendTo(_this.currentPathDiv);
+                wild.div = div;
+            }
+            var background = "repeating-linear-gradient(45deg, ";
+            var backgroundX = 1;
+            wild.types.forEach(function (type) {
+                var color = wild.isUnknown ? ColorsAny[0] : Colors[type][0];
+                background += "#".concat(color, " ").concat((backgroundX - 1) * 10, "px, #").concat(color, " ").concat(backgroundX * 10, "px,");
+                backgroundX++;
+            });
+            if (wild.types.length === 1) {
+                var type = wild.types[0];
+                var color = wild.isUnknown ? ColorsAny[1] : Colors[type][1];
+                background += "#".concat(color, " ").concat((backgroundX - 1) * 10, "px, #").concat(color, " ").concat(backgroundX * 10, "px,");
+                backgroundX++;
+            }
+            if (wild.value < wild.maxValue) {
+                var progressDiv = wild.div.find(".progress");
+                progressDiv.css("background", background.substring(0, background.length - 1) + ")");
+                progressDiv.css("width", (100 * wild.value / wild.maxValue) + "%");
+            }
+        });
+    };
+    PathPanel.prototype.getRandomAffix = function () {
+        return pathPrefixes[Math.floor(Math.random() * pathPrefixes.length)];
+    };
+    PathPanel.prototype.addToPossiblePath = function (path, _a) {
+        var type = _a.type, amount = _a.amount;
+        var found = path.parts.filter(function (x) { return x.type === type; });
+        if (found.length > 0) {
+            found[0].amount += amount !== null && amount !== void 0 ? amount : 1;
+        }
+        else {
+            path.parts.push({ type: type, amount: amount !== null && amount !== void 0 ? amount : 1 });
+        }
+    };
+    PathPanel.prototype.recalculatePartsOfPath = function (path) {
+        if (path.parts.length > 3) {
+            path.parts.sort(function (a, b) { return b.amount - a.amount; });
+            console.log("HAD TO SORT PARTS: " + JSON.stringify(path.parts));
+            path.parts = [path.parts[0], path.parts[1], path.parts[2]];
+        }
+        var sum = 0;
+        path.parts.forEach(function (_a) {
+            var amount = _a.amount;
+            sum += amount;
+        });
+        path.parts.forEach(function (part) {
+            part.amount = Math.round(100 * part.amount / sum);
+        });
+        var finalSum = 0;
+        path.parts.forEach(function (_a) {
+            var amount = _a.amount;
+            finalSum += amount;
+        });
+        if (finalSum < 100) {
+            path.parts[0].amount += 1;
+        }
+    };
+    PathPanel.prototype.makePossiblePath = function () {
+        var _this = this;
+        var path = { name: "", parts: [] };
+        console.log("---- making possible path ----");
+        var i = 0;
+        do {
+            var affix = this.getRandomAffix();
+            path.name = affix.name;
+            affix.adds.forEach(function (add) { return _this.addToPossiblePath(path, add); });
+            console.log(" > start with ".concat(affix.name, " \u2192 ").concat(JSON.stringify(affix.adds.map(function (x) { return x.type + "(" + (x.amount ? x.amount : 1) + ")"; }))));
+            while (path.name.includes("{")) {
+                i++;
+                if (i > 10000) {
+                    return { name: "error", parts: [{ type: "normal", amount: 1 }] };
+                }
+                for (var i_1 = 0; i_1 < replaceables.length; i_1++) {
+                    var replaceable = replaceables[i_1];
+                    if (path.name.includes(replaceable.replace)) {
+                        i_1 = replaceables.length;
+                        var newAffix = Util.randomFromArray(replaceable.arr);
+                        path.name = path.name.replace(replaceable.replace, newAffix.name);
+                        newAffix.adds.forEach(function (add) { return _this.addToPossiblePath(path, add); });
+                        console.log(" > adding ".concat(newAffix.name, " \u2192 ").concat(JSON.stringify(newAffix.adds.map(function (x) { return x.type + "(" + (x.amount ? x.amount : 1) + ")"; }))));
+                    }
+                }
+            }
+        } while (path.parts.length == 0);
+        this.recalculatePartsOfPath(path);
+        return path;
+    };
+    PathPanel.prototype.makePossiblePaths = function () {
+        this.possiblePaths = [];
+        for (var i = 0; i < 3; i++) {
+            var path = this.makePossiblePath();
+            this.possiblePaths.push(path);
+        }
+    };
+    PathPanel.prototype.makePossiblePathsDiv = function () {
+        var _this = this;
+        this.possiblePathsDiv = $("<div id=\"possible_paths_panel\"></div>");
+        this.possiblePaths.forEach(function (pp) {
+            var path = $("<div class=\"possible_path\"><span class=\"name\">".concat(pp.name, "</span></div>"));
+            var partsDiv = $("<div class=\"parts\"></div>");
+            pp.parts.forEach(function (type) {
+                var percent = $("<div class=\"percent\"><span>".concat(type.amount, "%</span></div>"));
+                var typeImg = $("<img src=\"./assets/types/".concat(type.type, ".png\" title=\"").concat(type.type, "\" height=\"32px\">"));
+                percent.append(typeImg);
+                partsDiv.append(percent);
+            });
+            path.append(partsDiv);
+            path.on("click", function () { return _this.choosePath(pp); });
+            _this.possiblePathsDiv.append(path);
+        });
+        $('#path_panel').append(this.possiblePathsDiv);
+    };
+    PathPanel.prototype.choosePath = function (pp) {
+        var _this = this;
+        this.possiblePaths = undefined;
+        this.possiblePathsDiv.remove();
+        this.possiblePathsDiv = undefined;
+        this.currentPath = {
+            region: "Kanto",
+            name: pp.name,
+            wilds: []
+        };
+        var nWilds = 7 + Math.floor(Math.random() * 5);
+        var types = [];
+        pp.parts.forEach(function (part) {
+            var nOfType = part.amount / 100 * nWilds;
+            for (var i = 0; i < nOfType; i++) {
+                console.log(_this.knownTypes);
+                _this.addWild([part.type], _this.knownTypes[part.type] ? false : true);
+            }
+        });
+        Util.shuffle(this.currentPath.wilds);
+        this.update();
+    };
+    PathPanel.prototype.addWild = function (types, isUnknown) {
+        console.log(types + " is " + isUnknown);
+        var wild = { types: types, maxValue: 4, value: 0, isUnknown: isUnknown };
+        this.currentPath.wilds.push(wild);
+    };
+    PathPanel.prototype.addProgress = function (type) {
+        if (!this.currentPath)
+            return;
+        for (var i = 0; i < 3; i++) {
+            var wild = this.findUncompleteWildWithTypeOrAnyOrUnknown(type);
+            if (wild) {
+                if (wild.value < wild.maxValue)
+                    wild.value++;
+                if (wild.value >= wild.maxValue) {
+                    var pos = wild.div.find(".pokeball").offset();
+                    wild.div.remove();
+                    this.main.explore(wild.types, pos);
+                }
+                return;
+            }
+        }
+    };
+    PathPanel.prototype.findUncompleteWildWithTypeOrAnyOrUnknown = function (type) {
+        var i = 0;
+        return this.currentPath.wilds.find(function (x) {
+            if (x.value < x.maxValue)
+                i++;
+            if (i > 3)
+                return;
+            if (x.value >= x.maxValue)
+                return false;
+            if (x.isUnknown)
+                return true;
+            if (x.types.includes(type))
+                return true;
+            // if (x.types.find(x => !this.knownTypes[x])) return true;
+            return false;
+        });
+    };
+    return PathPanel;
+}());
 var lastDivGrabbed;
-var levelStars = [
-    [],
-    [], // level 1 <- starting level
-    ["bronze"],
-    ["bronze", "bronze"],
-    ["bronze", "bronze", "bronze"],
-    ["silver"],
-    ["silver", "silver"],
-    ["silver", "silver", "silver"],
-    ["gold"],
-    ["gold", "gold"],
-    ["gold", "gold", "gold"],
-];
 var PokeCard = /** @class */ (function () {
     // lastPos: JQuery.Coordinates;
-    function PokeCard(pokemon, onClick, onHoldClick, onDrop, savedData) {
+    function PokeCard(pokemon, onClick, onDrop, savedData) {
         var _a;
         this.pokemon = pokemon;
         this.onClick = onClick;
-        this.onHoldClick = onHoldClick;
         this.onDrop = onDrop;
         this.id = (Math.random() + 1).toString(36).substring(7) + (Math.random() + 1).toString(36).substring(7);
         this.enteringIntervalId = null;
@@ -433,35 +961,46 @@ var PokeCard = /** @class */ (function () {
     }
     PokeCard.prototype.init = function () {
         var _this = this;
+        var _a;
         var pokemon = this.pokemon;
-        this.div = $("<div class=\"pokemon ".concat(this.isOpened ? "" : "closed", " ").concat(this.isBall ? "ball" : "", "\"></div>"));
+        this.div = $("<div class=\"pokemon ".concat(pokemon.mainType === 'ghost' || pokemon.secondType === 'ghost' ? "ghost" : "", " ").concat(this.isOpened ? "" : "closed", " ").concat(this.isBall ? "" : "showExtraInfo", "\"></div>"));
         var div = this.div;
-        div.css('background-color', "#" + Colors[pokemon.mainType][0]);
+        // div.css('background-color', "#" + Colors[pokemon.mainType][0]);
         div.attr('id', this.id);
-        // name
-        var name = $("<div class=\"pokemonName name\">".concat(pokemon.name, "</div>"));
-        // number
-        var number = $("<div class=\"number\">#".concat(pokemon.nr, "</div>"));
-        // types
-        var typeDivs = pokemon.types.map(function (type) { return _this.makeTypeDiv(type); });
-        var typesDiv = $("<div class=\"typesDiv\"></div>");
-        typeDivs.forEach(function (t) { return typesDiv.append(t); });
         // pokemon image
-        var pokemonImage = $("<div class=\"pokemonImage\"><img class=\"image\" src=\"assets/pokemons/".concat(pokemon.nr, ".png\"></div>"));
+        var pokemonImage = $("<div class=\"pokemonImage\"><img class=\"image\" src=\"assets/pokemons/".concat(pokemon.nr, ".png\" title=\"").concat(pokemon.starsString, " ").concat(pokemon.name, "\"></div>"));
+        // stars
         this.stars = $("<div class=\"stars\"></div>");
-        pokemonImage.append(this.stars);
         this.updateStars();
-        // pokeball image
-        var pokeballImage = $("<img class=\"pokeballImage\" src=\"assets/items/pokeball.png\">");
-        div.append(pokeballImage);
+        // progress bar
+        this.progressDiv = $("<div class=\"progress\"></div>");
+        // main image and colors
+        var imageAndColorsDiv = $("<div class=\"imageAndColors\"></div>");
+        imageAndColorsDiv.append(pokemonImage);
+        var color = Colors[this.pokemon.mainType];
+        var color2 = Colors[(_a = this.pokemon.types[1]) !== null && _a !== void 0 ? _a : this.pokemon.mainType];
+        var gradient = "linear-gradient(-45deg, #".concat(color2[0], " 49.9%, #").concat(color[0], " 50%), linear-gradient(-45deg, #").concat(color2[0], " 49.9%, #").concat(color[0], " 50%)");
+        imageAndColorsDiv.css('background', gradient);
+        // extra info
+        var name = $("<div class=\"pokemonName name\">".concat(pokemon.name, "</div>"));
+        var number = $("<div class=\"number\">#".concat(pokemon.nr, "</div>"));
+        var typesDiv = $("<div class=\"typesDiv\"></div>");
+        var typeDivs = pokemon.types.map(function (type) { return _this.makeTypeDiv(type); });
+        typeDivs.forEach(function (t) { return typesDiv.append(t); });
         var topDiv = $("<div class=\"topDiv\"></div>");
-        topDiv.append(name);
         topDiv.append(number);
+        topDiv.append(name);
         div.append(topDiv);
-        var botDiv = $("<div class=\"botDiv\"></div>");
-        botDiv.append(typesDiv);
-        botDiv.append(pokemonImage);
-        div.append(botDiv);
+        var extraInfo = $("<div class=\"extraInfo\"></div>");
+        extraInfo.append(topDiv);
+        extraInfo.append(typesDiv);
+        if (!this.isOpened)
+            this.pokeballImage = $("<img class=\"pokeballImage\" src=\"assets/items/pokeball.png\"></div>");
+        div.append(this.stars);
+        div.append(imageAndColorsDiv);
+        div.append(this.progressDiv);
+        div.append(extraInfo);
+        div.append(this.pokeballImage);
         this.addToBody();
     };
     PokeCard.prototype.animTempGrow = function () {
@@ -488,24 +1027,27 @@ var PokeCard = /** @class */ (function () {
         if (this.wasDragged)
             return;
         if (!this.isOpened) {
-            this.div.find(".pokemonImage").addClass("anim_becomingVisible");
-            this.div.find(".pokeballImage").addClass("anim_pokeballOpening");
+            // this.div.find(".pokemonImage").addClass("anim_becomingVisible");
+            // this.div.find(".pokeballImage").addClass("anim_pokeballOpening");
             setTimeout(function () {
                 _this.div.removeClass("closed");
-                _this.div.find(".pokemonImage").removeClass("anim_becomingVisible");
-                _this.div.find(".pokeballImage").removeClass("anim_pokeballOpening");
-                _this.toggleBall();
-            }, 1000);
+                //     this.div.find(".pokemonImage").removeClass("anim_becomingVisible");
+                //     this.div.find(".pokeballImage").removeClass("anim_pokeballOpening");
+                // // this.toggleBall();
+            }, 300);
+            Smoke.make(this.div.offset());
             this.isOpened = true;
             return;
         }
         var now = Date.now();
         if (now - this.lastClick < 200) {
-            this.toggleBall();
+            this.toggleExtraInfo();
             this.lastClick = 0;
         }
-        else
+        else {
             this.lastClick = now;
+            this.onClick();
+        }
     };
     PokeCard.prototype._onDrag = function (event) {
         this.x = event.position.left;
@@ -518,27 +1060,20 @@ var PokeCard = /** @class */ (function () {
     };
     PokeCard.prototype.makeTypeDiv = function (type) {
         var name = $("<div class=\"name\">".concat(type, "</div>"));
-        var image = $("<img class=\"typeImage\" src=\"assets/types/".concat(type, ".png\" class=\"typeImage\">"));
+        var image = $("<img class=\"typeImage\" src=\"assets/types/".concat(type, ".png\" title=\"").concat(type, "\" class=\"typeImage\">"));
         var div = $("<div class=\"type\"></div>");
-        div.append(name);
         div.append(image);
+        div.append(name);
         return div;
     };
-    PokeCard.prototype.toggleBall = function () {
-        var _this = this;
-        if (!this.div.hasClass('ball')) {
-            // this.div.removeClass('card');
-            this.div.addClass('ball');
-            this.div.addClass('anim_cardClosing');
-            setTimeout(function () { return _this.div.removeClass('anim_cardClosing'); }, 1000);
-            this.isBall = true;
+    PokeCard.prototype.toggleExtraInfo = function () {
+        if (!this.div.hasClass('showExtraInfo')) {
+            this.div.addClass('showExtraInfo');
+            this.isBall = false;
         }
         else {
-            this.div.removeClass('ball');
-            // this.div.addClass('card');
-            // this.div.addClass('anim_cardOpening')
-            // setTimeout(() => this.div.removeClass('anim_cardOpening'), 1000);
-            this.isBall = false;
+            this.div.removeClass('showExtraInfo');
+            this.isBall = true;
         }
         this.updateFilled();
     };
@@ -559,54 +1094,30 @@ var PokeCard = /** @class */ (function () {
             }
         }, 1000 / 60);
     };
+    PokeCard.prototype.isDraggable = function () {
+        return !this.enteringIntervalId &&
+            ((this.isBall && (this.pokemon.main.lockType != 'ball' && this.pokemon.main.lockType != 'hard'))
+                || (!this.isBall && (this.pokemon.main.lockType != 'card' && this.pokemon.main.lockType != 'hard')));
+    };
     PokeCard.prototype.addToBody = function () {
         var _this = this;
         $("body").append(this.div);
-        if (!this.x && !this.y) {
-            if (!this.isOpened) {
-                this.throwInPokeball();
-            }
-            else {
-                this.div.css('left', 0);
-                this.div.css('top', 0);
-            }
-        }
-        else {
-            this.div.css('left', this.x);
-            this.div.css('top', this.y);
-        }
-        this.div.css('position', 'absolute');
-        this.div.draggable({ drag: function (_a, event) { _this._onDrag(event); return !_this.enteringIntervalId; } });
+        this.div.css('left', this.x);
+        this.div.css('top', this.y);
+        this.div.draggable({ drag: function (_a, event) { _this._onDrag(event); return _this.isDraggable(); } });
         this.div.droppable({ drop: function (event1, event2) { return _this._onDrop(event1, event2); } });
-        this.div.on('click', function () { return _this.onClick(); });
+        // this.div.on('click', () => this.onClick());
         this.div.on('mousedown', function () { return _this._onMouseDown(); });
         this.div.on('mouseup', function () { return _this._onMouseUp(); });
         // this.div.on('mouseleave', () => this._onMouseLeave());
-        // if (this.isBall)
-        //     this.toggleBall();
         this.updateFilled();
     };
     PokeCard.prototype.remove = function () {
         this.div.remove();
     };
     PokeCard.prototype.updateFilled = function () {
-        var _a;
-        var color = Colors[this.pokemon.mainType];
-        var color2 = Colors[(_a = this.pokemon.types[1]) !== null && _a !== void 0 ? _a : this.pokemon.mainType];
         var n = 100 * this.pokemon.timer / this.pokemon.maxTimer;
-        if (this.div.hasClass('ball')) {
-            var gradient1 = "radial-gradient(closest-side, #".concat(color[0], " 89%, transparent 90% 100%), conic-gradient(white ").concat(n, "%, #").concat(color[0], " 0)");
-            var gradient2 = "linear-gradient(-45deg, #".concat(color2[0], " 49.9%, #").concat(color[0], " 50%)");
-            var gradient3 = "radial-gradient(closest-side, #".concat(color[0], " 89%, transparent 90% 100%), conic-gradient(white ").concat(n, "%, #").concat(color[0], " 0), linear-gradient(-45deg, #").concat(color2[0], " 49.9%, #").concat(color[0], " 50%)");
-            this.div.css('background', gradient3);
-        }
-        else {
-            // const gradient = `#${color[0]}`;
-            var gradient = "linear-gradient(-45deg, #".concat(color2[0], " 49.9%, #").concat(color[0], " 50%), linear-gradient(-45deg, #").concat(color2[0], " 49.9%, #").concat(color[0], " 50%)");
-            this.div.css('background', gradient);
-            this.div.find('.pokemonName').css('background', "linear-gradient(180deg,  #".concat(color[0], " 85%, transparent 86%), \n                                                     linear-gradient(90deg, white ").concat(n, "%, rgb(0,0,0,0.2) ").concat(n + 1, "%)"));
-        }
-        // card.css("background", `radial-gradient(closest-side, #${color} 79%, transparent 80% 100%), conic-gradient(white ${n}%, transparent 0)`)
+        this.progressDiv.css('background', "conic-gradient(white ".concat(n, "%, rgb(55, 55, 61) 0)"));
     };
     PokeCard.prototype.createManaGainAnimation = function (type) {
         var anim = $("<img class=\"anim_manaGain\" src=\"./assets/types/".concat(type, ".png\">"));
@@ -629,19 +1140,38 @@ var Pokemon = /** @class */ (function () {
         this.level = level;
     }
     Object.defineProperty(Pokemon.prototype, "maxTimer", {
-        get: function () { return 5; },
+        // get maxTimer(): number { return 5; };
+        // get maxTimer(): number { return Math.floor(5 * Math.pow(this.level, 0.66666)) };
+        get: function () { return Math.pow(3, this.level - 1); },
         enumerable: false,
         configurable: true
     });
     ;
     Object.defineProperty(Pokemon.prototype, "mainType", {
-        // get maxTimer(): number { return Math.floor(5 * Math.pow(this.level, 0.66666)) };
         get: function () { return this.types[0]; },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(Pokemon.prototype, "secondType", {
         get: function () { return this.types[1]; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Pokemon.prototype, "starsString", {
+        get: function () {
+            switch (this.level) {
+                case 2: return "Bronze 1";
+                case 3: return "Bronze 2";
+                case 4: return "Bronze 3";
+                case 5: return "Silver 1";
+                case 6: return "Silver 2";
+                case 7: return "Silver 3";
+                case 8: return "Gold 1";
+                case 9: return "Gold 2";
+                case 10: return "Gold 3";
+                default: return "";
+            }
+        },
         enumerable: false,
         configurable: true
     });
@@ -660,21 +1190,20 @@ var Pokemon = /** @class */ (function () {
                         /* onClic */ function () {
                             if (_this.timer >= _this.maxTimer) {
                                 _this.timer = 0;
-                                var manaGain = Math.pow(2, _this.level - 1);
-                                var _loop_2 = function (i) {
-                                    var manaType = Math.random() < secondTypeProbability[_this.level] ? _this.secondType : _this.mainType;
-                                    setTimeout(function () {
-                                        _this.main.manaPanel.addMana(manaType, 1);
-                                        _this.card.createManaGainAnimation(manaType);
-                                    }, i * 200 + (100 * Math.random()));
-                                };
-                                for (var i = 0; i < manaGain; i++) {
-                                    _loop_2(i);
-                                }
+                                // const manaGain = Math.pow(2, this.level - 1);
+                                // for (let i = 0; i < manaGain; i++) {
+                                // let manaType: PokeType = !this.secondType
+                                //     ? this.mainType
+                                //     : (Math.random() < secondTypeProbability[this.level] ? this.secondType : this.mainType);
+                                // setTimeout(() => {
+                                //     this.main.manaPanel.addMana(manaType, 1);
+                                //     this.card.createManaGainAnimation(manaType)
+                                // }, i * 200 + (100 * Math.random()));
+                                // }
+                                // this.generateMana();
                                 _this.card.updateFilled();
                             }
                         }, 
-                        /* onHold */ function () { }, 
                         /* onDrop */ function (idHeld, idDropped) { return _this.main.joinPokemon(_this, idDropped); }, savedPokemon);
                         return [2 /*return*/];
                 }
@@ -682,9 +1211,22 @@ var Pokemon = /** @class */ (function () {
         });
     };
     Pokemon.prototype.step = function () {
-        if (this.timer < this.maxTimer)
+        if (this.timer < this.maxTimer) {
             this.timer++;
+            this.generateMana();
+        }
         this.card.updateFilled();
+    };
+    Pokemon.prototype.generateMana = function () {
+        var manaType = this.getRandomManaType();
+        this.main.pathPanel.addProgress(manaType);
+        this.card.createManaGainAnimation(manaType);
+    };
+    Pokemon.prototype.getRandomManaType = function () {
+        return !this.secondType
+            ? this.mainType
+            // : (Math.random() < secondTypeProbability[this.level] ? this.secondType : this.mainType);
+            : (Math.random() < .5 ? this.secondType : this.mainType);
     };
     Pokemon.prototype.toJSON = function () {
         return { nr: this.nr, timer: this.timer, level: this.level };
@@ -698,25 +1240,87 @@ var Quests = [
     }
 ];
 var SavedData = /** @class */ (function () {
-    function SavedData(level, questsDone, pokemon, mana) {
-        this.level = level;
-        this.questsDone = questsDone;
+    function SavedData(pokemon, pokedex, 
+    // public mana: { [key in PokeType]?: number },
+    completedPaths, currentPath, lockType, increaseInFindingNewPokemon) {
         this.pokemon = pokemon;
-        this.mana = mana;
+        this.pokedex = pokedex;
+        this.completedPaths = completedPaths;
+        this.currentPath = currentPath;
+        this.lockType = lockType;
+        this.increaseInFindingNewPokemon = increaseInFindingNewPokemon;
     }
     SavedData.createNew = function () {
-        return new SavedData(1, 0, [], { 'normal': 0, 'grass': 0, 'poison': 0, 'fire': 0, 'flying': 0, 'water': 0, 'bug': 0, 'electric': 0, 'ground': 0, 'fairy': 0, 'fighting': 0, 'psychic': 0, 'rock': 0, 'steel': 0, 'ice': 0, 'ghost': 0, 'dragon': 0, 'dark': 0 });
+        return new SavedData([], // pokemon
+        [], // pokedex
+        0, // paths done
+        undefined, // path,
+        'none', // lock type
+        0 // increase in finding new pokemon
+        );
+        // mana:
+        // { 'normal': 0, 'grass': 0, 'poison': 0, 'fire': 0, 'flying': 0, 'water': 0, 'bug': 0, 'electric': 0, 'ground': 0, 'fairy': 0, 'fighting': 0, 'psychic': 0, 'rock': 0, 'steel': 0, 'ice': 0, 'ghost': 0, 'dragon': 0, 'dark': 0 },
     };
     SavedData.load = function () {
         var _a;
         var loaded = (_a = JSON.parse(localStorage.getItem('poke_saved_data'))) !== null && _a !== void 0 ? _a : SavedData.createNew();
         console.log({ loaded: loaded });
+        if (!loaded.pokedex)
+            loaded.pokedex = [];
+        loaded.pokemon.forEach(function (x) { return loaded.pokedex[x.nr] = true; });
         return loaded;
     };
     SavedData.prototype.saveAll = function () {
-        localStorage.setItem('poke_saved_data', JSON.stringify(this));
+        var saveObj = JSON.parse(JSON.stringify(this));
+        if (saveObj.currentPath)
+            saveObj.currentPath.wilds.forEach(function (x) { return delete x.div; });
+        localStorage.setItem('poke_saved_data', JSON.stringify(saveObj));
     };
     return SavedData;
+}());
+var Smoke = /** @class */ (function () {
+    function Smoke() {
+    }
+    // frames: Array<HTMLImageElement>;
+    // constructor() {
+    //     for (let i = 0; i < Smoke.smokeFrames.length; i++) {
+    //         let img = new Image();
+    //         img.src = Smoke.smokeFrames[i];
+    //         this.frames.push(img);
+    //     }
+    // }
+    Smoke.make = function (pos) {
+        var smoke = $("<img class=\"smoke\">");
+        smoke.css("left", pos.left);
+        smoke.css("top", pos.top);
+        $("body").append(smoke);
+        var _loop_2 = function (i) {
+            setTimeout(function () {
+                if (i >= Smoke.smokeFrames.length)
+                    smoke.remove();
+                else
+                    smoke.attr("src", Smoke.smokeFrames[i]);
+            }, i * this_1.frameLenght);
+        };
+        var this_1 = this;
+        for (var i = 0; i <= Smoke.smokeFrames.length; i++) {
+            _loop_2(i);
+        }
+    };
+    Smoke.frameLenght = 100;
+    Smoke.smokeFrames = [
+        "assets/ui/smoke_1.png",
+        "assets/ui/smoke_2.png",
+        "assets/ui/smoke_3.png",
+        "assets/ui/smoke_4.png",
+        "assets/ui/smoke_5.png",
+        "assets/ui/smoke_6.png",
+        "assets/ui/smoke_7.png",
+        "assets/ui/smoke_8.png",
+        "assets/ui/smoke_9.png",
+        "assets/ui/smoke_10.png",
+    ];
+    return Smoke;
 }());
 var StarterSelect = /** @class */ (function () {
     function StarterSelect() {
@@ -733,7 +1337,7 @@ var StarterSelect = /** @class */ (function () {
                         appendStarter = function (subdiv, pokemon) {
                             var pokemonDiv = $("<div class=\"starter\"></div>");
                             var pokemonName = $("<div class=\"name\">".concat(pokemon.name, "</div>"));
-                            var pokemonImage = $("<img src=\"assets/pokemons/".concat(pokemon.nr, ".png\">"));
+                            var pokemonImage = $("<img src=\"assets/pokemons/".concat(pokemon.nr, ".png\" title=\"").concat(pokemon.name, "\">"));
                             // const starterButtonWrapper = $(`<div class="starterButtonWrapper"></div>`)
                             pokemonDiv.append(pokemonName);
                             pokemonDiv.append(pokemonImage);
@@ -843,6 +1447,12 @@ var StaticData = /** @class */ (function () {
                     case 4:
                         _a.sent();
                         console.log({ prevolutionsByPokemon: this.prevolutionsByPokemon });
+                        return [4 /*yield*/, fetch('../assets/data/rarityByPokemon.json')
+                                .then(function (response) { return response.json(); })
+                                .then(function (json) { return _this.rarityByPokemon = json; })];
+                    case 5:
+                        _a.sent();
+                        console.log({ rarityByPokemon: this.rarityByPokemon });
                         // console.log(pokemonsByType)
                         console.log("loading static data finished");
                         return [2 /*return*/];
@@ -875,4 +1485,47 @@ var StaticData = /** @class */ (function () {
         });
     };
     return StaticData;
+}());
+var Util = /** @class */ (function () {
+    function Util() {
+    }
+    Util.distance = function (a, b) {
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var x1 = (_b = (_a = a.x) !== null && _a !== void 0 ? _a : a.left) !== null && _b !== void 0 ? _b : 0;
+        var x2 = (_d = (_c = b.x) !== null && _c !== void 0 ? _c : b.left) !== null && _d !== void 0 ? _d : 0;
+        var y1 = (_f = (_e = a.y) !== null && _e !== void 0 ? _e : a.top) !== null && _f !== void 0 ? _f : 0;
+        var y2 = (_h = (_g = b.y) !== null && _g !== void 0 ? _g : b.top) !== null && _h !== void 0 ? _h : 0;
+        return Math.hypot(x2 - x1, y2 - y1);
+    };
+    Util.shuffle = function (array) {
+        var _a;
+        var currentIndex = array.length;
+        var randomIndex;
+        while (currentIndex > 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            _a = [array[randomIndex], array[currentIndex]], array[currentIndex] = _a[0], array[randomIndex] = _a[1];
+        }
+        return array;
+    };
+    Util.randomFromArray = function (arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    };
+    Util.containsAny = function (arr1, arr2) {
+        for (var i = 0; i < arr2.length; i++) {
+            if (arr1.includes(arr2[i]))
+                return true;
+        }
+        return false;
+    };
+    Util.gaussianRandom = function (mean, stdev) {
+        if (mean === void 0) { mean = 0; }
+        if (stdev === void 0) { stdev = 1; }
+        var u = 1 - Math.random(); // Converting [0,1) to (0,1]
+        var v = Math.random();
+        var z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        // Transform to the desired mean and standard deviation:
+        return z * stdev + mean;
+    };
+    return Util;
 }());

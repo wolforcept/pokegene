@@ -1,18 +1,27 @@
 function start() {
     new Main();
 }
-var clear, addP, explore;
+var clear, addP, save, explore, exploreNew;
+
+function test(n, isNew) {
+    for (let i = 0; i < n; i++)
+        console.log(explore(1, ["grass"], isNew))
+}
 
 interface PokemonShort {
     nr: number, type1: PokeType, type2: PokeType
 }
 
+type LockType = 'none' | 'card' | 'ball' | 'hard';
+
 class Main {
 
     pokemon: Array<Pokemon> = [];
-    manaPanel: ManaPanel;
+    pokedex: Array<boolean> = [];
+    // manaPanel: ManaPanel;
+    pathPanel: PathPanel;
     increaseInFindingNewPokemon = 0;
-    questsDone: number;
+    lockType: LockType = 'none';
 
     stepperId: number;
 
@@ -51,11 +60,12 @@ class Main {
                 }
             });
         clear = () => {
-            new SavedData(1, 0, [], {},).saveAll();
+            SavedData.createNew().saveAll();
             window.location.reload();
         }
-        addP = (a: number) => this.addNewPokemon(a)
-        explore = () => this.explore();
+        addP = (a: number) => this.addNewPokemon(a, 100, 100)
+        save = () => this.saveAll();
+        explore = (lvl, types, isnew) => Main.exploreNewPokemon(lvl, types, this.pokemon.map(x => ({ nr: x.nr, type1: x.mainType, type2: x.secondType })), isnew);
     }
 
     async load(): Promise<SavedData> {
@@ -65,8 +75,6 @@ class Main {
 
     saveAll() {
         new SavedData(
-            this.manaPanel.level,
-            this.questsDone,
             this.pokemon.map(pokemon => ({
                 x: pokemon.card.x,
                 y: pokemon.card.y,
@@ -76,33 +84,56 @@ class Main {
                 timer: pokemon.timer,
                 isOpened: pokemon.card.isOpened
             }) as SavedPokemon),
-            this.manaPanel.mana,
+            this.pokedex,
+            // this.manaPanel.mana,
+            this.pathPanel.completedPaths,
+            this.pathPanel.currentPath,
+            this.lockType,
+            this.increaseInFindingNewPokemon,
         )
             .saveAll();
     }
 
-    async addNewPokemon(nr: number) {
+    async addNewPokemon(nr: number, x: number, y: number): Promise<Pokemon> {
         const pokemon = new Pokemon(this, nr, 0, 1);
         await pokemon.init({
             nr,
             timer: 0,
             level: 1,
-            x: null,
-            y: null,
+            x,
+            y,
             isBall: true,
             isOpened: false,
         } as SavedPokemon);
+        this.pokedex[nr] = true;
         this.pokemon.push(pokemon);
+        return pokemon;
     }
 
     joinPokemon(pokemon1: Pokemon, id2: string) {
         const pokemon2 = this.pokemon.find(x => x.card.id === id2);
         if (pokemon1 && pokemon2 && pokemon1.nr === pokemon2.nr && pokemon1.level === pokemon2.level && pokemon1.card.isOpened && pokemon2.card.isOpened) {
+            if (pokemon1.level === 10) {
+                const evNrs = StaticData.evolutionsByPokemon[pokemon1.nr];
+                if (evNrs !== null && evNrs.length > 0) {
+                    const newNr = Util.randomFromArray(evNrs);
+                    console.log("WILL EVOLVE: " + pokemon1.nr + " TO " + newNr);
+
+                    if (newNr > 0) {
+                        this.addNewPokemon(newNr, pokemon1.card.x, pokemon1.card.y);
+                        this.pokemon.splice(this.pokemon.indexOf(pokemon1), 1);
+                        pokemon1.card.remove();
+                        this.pokemon.splice(this.pokemon.indexOf(pokemon2), 1);
+                        pokemon2.card.remove();
+                        return;
+                    }
+                }
+            }
             // pokemon2.remove();
             this.pokemon.splice(this.pokemon.indexOf(pokemon2), 1);
             pokemon2.card.remove();
             pokemon1.level++;
-            pokemon1.timer = 0;
+            pokemon1.timer = pokemon1.maxTimer;
             pokemon1.card.animTempGrow();
             pokemon1.card.updateStars();
             pokemon1.card.updateFilled();
@@ -110,6 +141,9 @@ class Main {
     }
 
     async start(loadedData?: SavedData) {
+
+        this.lockType = loadedData.lockType;
+        this.increaseInFindingNewPokemon = loadedData.increaseInFindingNewPokemon;
 
         let loadTimes = [];
         loadedData.pokemon.forEach((savedPokemon: SavedPokemon) => {
@@ -119,9 +153,13 @@ class Main {
         });
         await Promise.all(loadTimes);
 
-        this.manaPanel = new ManaPanel(this, loadedData);
-        this.manaPanel.init();
-        this.manaPanel.update();
+        // this.manaPanel = new ManaPanel(this, loadedData);
+        // this.manaPanel.init();
+        // this.manaPanel.update();
+
+        this.pathPanel = new PathPanel(this, loadedData);
+        this.pathPanel.init();
+        this.pathPanel.update();
 
         this.stepperId = setInterval(() => this.step(), 1000);
 
@@ -147,133 +185,205 @@ class Main {
     }
 
     // explorations = 0
+    saveCooldown = 0;
     step() {
+
         this.pokemon.forEach((pokemon) => {
             if (pokemon.card.isOpened)
                 pokemon.step();
         });
-        this.manaPanel.update();
-        this.saveAll();
-        // if (this.explorations === 0) {
-        //     this.explore();
-        //     this.explorations++;
-        // }
-        // console.log(this.manaPanel.mana);
+
+        this.pathPanel.step();
+        this.pathPanel.update();
+
+        if (this.saveCooldown <= 0) {
+            this.saveAll();
+            this.saveCooldown = 60;
+        } else {
+            this.saveCooldown--;
+        }
+
     }
 
-    explore() {
+    explore(types: Array<PokeType>, pos: JQuery.Coordinates) {
 
-        const currLevel = this.manaPanel.level;
-        const manas = this.manaPanel.mana;
-        const orderedManas = PokeTypes.filter(type => manas[type] > 0).map((type: PokeType) => ({ type, mana: manas[type] })).sort((a, b) => (b.mana - a.mana));
+        const currLevel = Math.min(100, this.pathPanel.completedPaths);
+        // const manas = this.manaPanel.mana;
+        // const orderedManas = PokeTypes.filter(type => manas[type] > 0).map((type: PokeType) => ({ type, mana: manas[type] })).sort((a, b) => (b.mana - a.mana));
         // const orderedManasWithoutNormal = orderedManas.filter(({ type }) => type !== 'normal');
-        const sum = orderedManas.reduce((t, x) => (t + x.mana), 0)
-        const currentPokemonWithCurrentMana = this.pokemon.filter(x => orderedManas.find(({ type }) => type === x.mainType || type === x.secondType));
-        let currentPokemon: Array<PokemonShort> = currentPokemonWithCurrentMana.map(x => ({ nr: x.nr, type1: x.mainType, type2: x.secondType }));
-        currentPokemon = currentPokemon.filter((x, i) => currentPokemon.findIndex(y => y.nr === x.nr) === i);
-        // console.log({ currentPokemon });
+        // const sum = orderedManas.reduce((t, x) => (t + x.mana), 0)
+        // const currentPokemonWithType = this.pokemon.filter(x => orderedManas.find(({ type }) => type === x.mainType || type === x.secondType));
+        // let currentPokemon: Array<PokemonShort> = currentPokemonWithCurrentMana.map(x => ({ nr: x.nr, type1: x.mainType, type2: x.secondType }));
+        // currentPokemon = currentPokemon.filter((x, i) => currentPokemon.findIndex(y => y.nr === x.nr) === i);
+
+        console.log(`WILL TRY TO GET A ${types} POKEMON`);
+        const currentPokemon: Array<PokemonShort> = this.pokemon.filter(x => types.includes(x.mainType) || types.includes(x.secondType)).map(x => ({ nr: x.nr, type1: x.mainType, type2: x.secondType }));
+        console.log({ currentPokemon });
 
         // get new pokemon prob stats:
-        const max = 0.1;
+        const max = 0.2;
         const start = 0.3;
         const growth = 100;
-        const getNewPokemonProb = (max - ((max - start) * (growth / (growth + currLevel))));
+        const getNewPokemonProb = (max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
 
         console.log("new pokemon prob = " + getNewPokemonProb)
 
-        let nr: number;
-        if (currentPokemon.length > 0 && Math.random() > getNewPokemonProb) {
-            nr = this.exploreCurrentPokemon(currentPokemon, sum);
-            // this.increaseInFindingNewPokemon++;
-        } else {
-            nr = this.exploreNewPokemon(currentPokemon.map(x => x.nr), orderedManas);
-            // this.increaseInFindingNewPokemon = 0;
-        }
+        let nr: number = Main.exploreNewPokemon(currLevel, types, currentPokemon, /*can be new?*/Math.random() < getNewPokemonProb);
 
         if (nr) {
-            this.addNewPokemon(nr);
-            this.manaPanel.level++;
-            this.manaPanel.removeAllMana();
+            this.startAddPokemonSequence(nr, pos);
+            // this.manaPanel.level++;
+            // this.manaPanel.removeAllMana();
         }
     }
 
-    exploreCurrentPokemon(pokemon: Array<PokemonShort>, totalMana: number): number {
-        console.log("exploring current pokemon...")
+    async startAddPokemonSequence(nr: number, posI: JQuery.Coordinates) {
+        const pokemon = (await this.addNewPokemon(nr, posI.left, posI.top)).card.div;
 
-        const manas = this.manaPanel.mana;
-        const weights = pokemon.map(x => {
-            const mana1 = manas[x.type1];
-            const mana2 = manas[x.type2] ?? 0;
-            return (mana1 + mana2) / totalMana;
-        })
+        let vx = -4 + 8 * Math.random(), vy = -8 + Math.random() * 2, gravity = 0.6;
+        let lifetime = 30 + Math.random() * 10;
+        let intervalId: number;
+        let intervalFunc = () => {
+            const currPos = pokemon.offset();
+            lifetime--;
 
-        const num = Math.random();
-        let s = 0;
-        const lastIndex = weights.length - 1;
+            if (lifetime <= 0) {
+                clearInterval(intervalId);
+            } else {
 
-        // console.log(weights, pokemon.map(x => x.nr));
+                pokemon.css("left", currPos.left + vx);
+                pokemon.css("top", currPos.top + vy);
 
-        for (var i = 0; i < lastIndex; ++i) {
-            s += weights[i];
-            if (num < s) {
-                return pokemon[i].nr;
+                vy += gravity;
+            }
+
+        };
+        intervalId = setInterval(intervalFunc, 1000 / 60);
+
+    }
+
+    // exploreCurrentPokemon(pokemon: Array<PokemonShort>, totalMana: number): number {
+    //     console.log("exploring current pokemon...")
+
+    //     const manas = this.manaPanel.mana;
+    //     const weights = pokemon.map(x => {
+    //         const mana1 = manas[x.type1];
+    //         const mana2 = manas[x.type2] ?? 0;
+    //         return (mana1 + mana2) / totalMana;
+    //     })
+
+    //     const num = Math.random();
+    //     let s = 0;
+    //     const lastIndex = weights.length - 1;
+
+    //     // console.log(weights, pokemon.map(x => x.nr));
+
+    //     for (var i = 0; i < lastIndex; ++i) {
+    //         s += weights[i];
+    //         if (num < s) {
+    //             return pokemon[i].nr;
+    //         }
+    //     }
+
+    //     return pokemon[lastIndex].nr;
+    // }
+
+    static exploreNewPokemon(level: number, types: Array<PokeType>, current: Array<PokemonShort>, canBeNew: boolean): number {
+        console.log(`EXPLORING level:${level} types:${types} new:${canBeNew}`);
+        const allPossible = [];
+        if (!canBeNew)
+            current.forEach(currPoke => allPossible.push(currPoke.nr));
+        if (canBeNew || allPossible.length === 0)
+            types.forEach(type => StaticData.pokemonsByType[type].forEach(nr => allPossible.push(nr)));
+
+        if (allPossible.length === 0) return 0;
+
+        allPossible.sort((a, b) => Number(a) - Number(b));
+
+        for (let i = 0; i < allPossible.length; i++) {
+            const nr = allPossible[i];
+            const prevEvNr = StaticData.prevolutionsByPokemon[nr];
+            if (prevEvNr && !current.find(x => x.nr === nr)) {
+                allPossible.splice(i, 1);
+                i--;
             }
         }
 
-        return pokemon[lastIndex].nr;
-    }
+        let tries = 0;
+        let nr = 0;
+        while (nr == 0 && tries < 10000) {
+            tries++;
+            let index = 0;
 
-    exploreNewPokemon(currentNrs: Array<number>, manas2: Array<{ type: PokeType, mana: number }>): number {
+            let skips = Math.floor(Math.abs(Util.gaussianRandom(level, level / 10)));
+            const initialSkipProb = this.getSkipProbability(level);
+            let skipProb = initialSkipProb;
 
-        const level = this.manaPanel.level;
-        const minNumber = Quests[this.questsDone - 1]?.exploreNumber ?? 1;
+            while (skips > 0) {
+
+                const firstNr = allPossible[0];
+                const nextNr = allPossible[index + 1];
+
+                skips--;
+                if (Math.random() < skipProb) {
+                    index++;
+                    console.log("SKIPPED")
+                    skipProb = initialSkipProb;
+                } else {
+                    skipProb *= 1.1;
+                }
+            }
+            nr = allPossible[Math.min(allPossible.length - 1, index)];
+        }
+
+        return nr;
+
+        // const minNumber = Quests[this.pathPanel.completedPaths - 1]?.exploreNumber ?? 1;
         // const searchLength = Math.floor(Math.abs(this.gaussianRandom(50, 10)));
-        const searchLength = Math.floor(Math.abs(this.gaussianRandom(50, 10 + level / 4)));
         // console.log({ minNumber, searchLength });
 
         // console.log("exploring new pokemon...")
-        const manas = { ...this.manaPanel.mana };
-        if (level < 100)
-            manas.normal = (1 - .01 * level) * PokeTypes.map(x => manas[x]).reduce((max, x) => x > max ? x : max, 0);
+        // const manas = { ...this.manaPanel.mana };
+        // if (level < 100)
+        //     manas.normal = (1 - .01 * level) * PokeTypes.map(x => manas[x]).reduce((max, x) => x > max ? x : max, 0);
         // console.log(manas);
-        const grabs: Array<{ nr: number, str: number }> = [];
+        // const grabs: Array<{ nr: number, str: number }> = [];
 
-        for (let i = 0; i < searchLength; i++) {
+        // for (let i = 0; i < searchLength; i++) {
 
-            const nr = minNumber + i;
-            if (
-                nr < minNumber
-                || StaticData.prevolutionsByPokemon[nr] !== null
-                || StaticData.prevolutionsByPokemon[nr] > nr
-                || currentNrs.find(x => x === nr)
-            ) continue;
+        //     const nr = i;
+        //     if (StaticData.prevolutionsByPokemon[nr] !== null
+        //         || StaticData.prevolutionsByPokemon[nr] > nr
+        //         || currentNrs.find(x => x === nr)
+        //     ) continue;
 
-            const types = StaticData.typesByPokemon[nr];
-            let str = 0;
-            types.forEach(type => str += manas[type]);
-            grabs.push({ nr, str })
-        }
-        grabs.sort((a, b) => b.str - a.str);
-        // console.log(grabs);
-        const final = grabs[Math.min(grabs.length, Math.floor(Math.abs(this.gaussianRandom(0, 3))))];
+        //     const typesOfNewPokemon = StaticData.typesByPokemon[nr];
+        //     if (!Util.containsAny(typesOfNewPokemon, types))
+        //         continue;
 
-        return final.nr;
+        //     let str = 0;
+        //     // types.forEach(type => str += manas[type]);
+        //     str += .1 * StaticData.rarityByPokemon[nr];
+        //     grabs.push({ nr, str })
+        // }
+        // grabs.sort((a, b) => b.str - a.str);
+        // // console.log(grabs);
+        // const final = grabs[Math.min(grabs.length, Math.floor(Math.abs(this.gaussianRandom(0, 3))))];
+
+        // return final.nr;
+    }
+
+    static getSkipProbability(level: number): number {
+        return 0.001;
     }
 
     getRandomPokemon(): number {
-        let nr = 1 + Math.abs(Math.floor(this.gaussianRandom(this.manaPanel.level / 5, 10 + this.manaPanel.level / 10)));
+        let level = this.pathPanel.completedPaths;
+        let nr = 1 + Math.abs(Math.floor(Util.gaussianRandom(level / 5, 10 + level / 10)));
         while (StaticData.prevolutionsByPokemon[nr] != null || StaticData.prevolutionsByPokemon[nr] > nr)
             nr--;
         return nr;
         // console.log(nr);
-    }
-
-    gaussianRandom(mean = 0, stdev = 1) {
-        const u = 1 - Math.random(); // Converting [0,1) to (0,1]
-        const v = Math.random();
-        const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-        // Transform to the desired mean and standard deviation:
-        return z * stdev + mean;
     }
 
     downloadFile(name: string, data: any) {

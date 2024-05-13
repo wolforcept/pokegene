@@ -7,7 +7,7 @@ class StarterSelect {
         const appendStarter = (subdiv, pokemon: PokemonStaticData) => {
             const pokemonDiv = $(`<div class="starter"></div>`)
             const pokemonName = $(`<div class="name">${pokemon.name}</div>`)
-            const pokemonImage = $(`<img src="assets/pokemons/${pokemon.nr}.png">`)
+            const pokemonImage = $(`<img src="assets/pokemons/${pokemon.nr}.png" title="${pokemon.name}">`)
             // const starterButtonWrapper = $(`<div class="starterButtonWrapper"></div>`)
             pokemonDiv.append(pokemonName);
             pokemonDiv.append(pokemonImage);
