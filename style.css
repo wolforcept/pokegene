@@ -210,7 +210,7 @@ body.starting {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 10;
+  z-index: 1000;
   gap: 10px;
   pointer-events: none;
 }
