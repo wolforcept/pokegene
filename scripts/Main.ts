@@ -224,7 +224,7 @@ class Main {
         const max = 0.2;
         const start = 0.3;
         const growth = 100;
-        const getNewPokemonProb = (max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
+        const getNewPokemonProb = .2; //(max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
 
         console.log("new pokemon prob = " + getNewPokemonProb)
 
