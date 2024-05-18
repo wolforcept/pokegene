@@ -1,11 +1,11 @@
 function start() {
     new Main();
 }
-var clear, addP, save, explore, exploreNew;
+var clear, addP, save, explore;
 
 function test(n, isNew) {
     for (let i = 0; i < n; i++)
-        console.log(explore(1, ["grass"], isNew))
+        console.log(explore(1, ["water"], isNew))
 }
 
 interface PokemonShort {
@@ -224,7 +224,8 @@ class Main {
         const max = 0.2;
         const start = 0.3;
         const growth = 100;
-        const getNewPokemonProb = (max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
+        const getNewPokemonProb = .2; //(max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
+        // const getNewPokemonProb = 1;
 
         console.log("new pokemon prob = " + getNewPokemonProb)
 
@@ -290,7 +291,7 @@ class Main {
 
     static exploreNewPokemon(level: number, types: Array<PokeType>, current: Array<PokemonShort>, canBeNew: boolean): number {
         console.log(`EXPLORING level:${level} types:${types} new:${canBeNew}`);
-        const allPossible = [];
+        const allPossible: Array<number> = [];
         if (!canBeNew)
             current.forEach(currPoke => allPossible.push(currPoke.nr));
         if (canBeNew || allPossible.length === 0)
@@ -316,22 +317,18 @@ class Main {
             let index = 0;
 
             let skips = Math.floor(Math.abs(Util.gaussianRandom(level, level / 10)));
-            const initialSkipProb = this.getSkipProbability(level);
-            let skipProb = initialSkipProb;
 
             while (skips > 0) {
 
-                const firstNr = allPossible[0];
-                const nextNr = allPossible[index + 1];
+                const numberDiff = allPossible[index + 1] - allPossible[0];
 
                 skips--;
-                if (Math.random() < skipProb) {
+                const skipProb = this.getSkipProbability(level, skips, numberDiff);
+
+                console.log(`SkipProbability(${level}, ${skips}, ${numberDiff}) = ${skipProb}`)
+
+                if (Math.random() < skipProb)
                     index++;
-                    console.log("SKIPPED")
-                    skipProb = initialSkipProb;
-                } else {
-                    skipProb *= 1.1;
-                }
             }
             nr = allPossible[Math.min(allPossible.length - 1, index)];
         }
@@ -373,8 +370,8 @@ class Main {
         // return final.nr;
     }
 
-    static getSkipProbability(level: number): number {
-        return 0.001;
+    static getSkipProbability(level: number, skipsDone: number, diff: number): number {
+        return .01 * (5 + level / 5) * (skipsDone > 1 ? skipsDone : 1) / (diff > 1 ? diff : 1);
     }
 
     getRandomPokemon(): number {

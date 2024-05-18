@@ -340,10 +340,10 @@ var replaceables = [
 function start() {
     new Main();
 }
-var clear, addP, save, explore, exploreNew;
+var clear, addP, save, explore;
 function test(n, isNew) {
     for (var i = 0; i < n; i++)
-        console.log(explore(1, ["grass"], isNew));
+        console.log(explore(1, ["water"], isNew));
 }
 var Main = /** @class */ (function () {
     function Main() {
@@ -536,7 +536,8 @@ var Main = /** @class */ (function () {
         var max = 0.2;
         var start = 0.3;
         var growth = 100;
-        var getNewPokemonProb = (max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
+        var getNewPokemonProb = .2; //(max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
+        // const getNewPokemonProb = 1;
         console.log("new pokemon prob = " + getNewPokemonProb);
         var nr = Main.exploreNewPokemon(currLevel, types, currentPokemon, /*can be new?*/ Math.random() < getNewPokemonProb);
         if (nr) {
@@ -623,20 +624,13 @@ var Main = /** @class */ (function () {
             tries++;
             var index = 0;
             var skips = Math.floor(Math.abs(Util.gaussianRandom(level, level / 10)));
-            var initialSkipProb = this.getSkipProbability(level);
-            var skipProb = initialSkipProb;
             while (skips > 0) {
-                var firstNr = allPossible[0];
-                var nextNr = allPossible[index + 1];
+                var numberDiff = allPossible[index + 1] - allPossible[0];
                 skips--;
-                if (Math.random() < skipProb) {
+                var skipProb = this.getSkipProbability(level, skips, numberDiff);
+                console.log("SkipProbability(".concat(level, ", ").concat(skips, ", ").concat(numberDiff, ") = ").concat(skipProb));
+                if (Math.random() < skipProb)
                     index++;
-                    console.log("SKIPPED");
-                    skipProb = initialSkipProb;
-                }
-                else {
-                    skipProb *= 1.1;
-                }
             }
             nr = allPossible[Math.min(allPossible.length - 1, index)];
         }
@@ -669,8 +663,8 @@ var Main = /** @class */ (function () {
         // const final = grabs[Math.min(grabs.length, Math.floor(Math.abs(this.gaussianRandom(0, 3))))];
         // return final.nr;
     };
-    Main.getSkipProbability = function (level) {
-        return 0.001;
+    Main.getSkipProbability = function (level, skipsDone, diff) {
+        return .01 * (5 + level / 5) * (skipsDone > 1 ? skipsDone : 1) / (diff > 1 ? diff : 1);
     };
     Main.prototype.getRandomPokemon = function () {
         var level = this.pathPanel.completedPaths;
