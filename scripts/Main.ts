@@ -4,8 +4,8 @@ function start() {
 var clear, addP, save, explore;
 
 function test(n, isNew) {
-    for (let i = 0; i < n; i++)
-        console.log(explore(1, ["water"], isNew))
+    // for (let i = 0; i < n; i++)
+    // console.log(explore(1, ["water"], isNew))
 }
 
 interface PokemonShort {
@@ -65,7 +65,7 @@ class Main {
         }
         addP = (a: number) => this.addNewPokemon(a, 100, 100)
         save = () => this.saveAll();
-        explore = (lvl, types, isnew) => Main.exploreNewPokemon(lvl, types, this.pokemon.map(x => ({ nr: x.nr, type1: x.mainType, type2: x.secondType })), isnew);
+        explore = (lvl, types) => Main.exploreNewPokemon(lvl, types, this.pokemon.map(x => ({ nr: x.nr, type1: x.mainType, type2: x.secondType })));
     }
 
     async load(): Promise<SavedData> {
@@ -117,7 +117,7 @@ class Main {
                 const evNrs = StaticData.evolutionsByPokemon[pokemon1.nr];
                 if (evNrs !== null && evNrs.length > 0) {
                     const newNr = Util.randomFromArray(evNrs);
-                    console.log("WILL EVOLVE: " + pokemon1.nr + " TO " + newNr);
+                    // console.log("WILL EVOLVE: " + pokemon1.nr + " TO " + newNr);
 
                     if (newNr > 0) {
                         this.addNewPokemon(newNr, pokemon1.card.x, pokemon1.card.y);
@@ -216,20 +216,25 @@ class Main {
         // let currentPokemon: Array<PokemonShort> = currentPokemonWithCurrentMana.map(x => ({ nr: x.nr, type1: x.mainType, type2: x.secondType }));
         // currentPokemon = currentPokemon.filter((x, i) => currentPokemon.findIndex(y => y.nr === x.nr) === i);
 
-        console.log(`WILL TRY TO GET A ${types} POKEMON`);
         const currentPokemon: Array<PokemonShort> = this.pokemon.filter(x => types.includes(x.mainType) || types.includes(x.secondType)).map(x => ({ nr: x.nr, type1: x.mainType, type2: x.secondType }));
-        console.log({ currentPokemon });
 
         // get new pokemon prob stats:
-        const max = 0.2;
-        const start = 0.3;
-        const growth = 100;
-        const getNewPokemonProb = .2; //(max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
+        // const max = 0.2;
+        // const start = 0.3;
+        // const growth = 100;
+        // const getNewPokemonProb = 1; //(max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
         // const getNewPokemonProb = 1;
+        const getNewPokemonProb = this.pathPanel.completedPaths < 10 ? .3 : (this.pathPanel.completedPaths < 20 ? .2 : .1);
+        const isNew = Math.random() < getNewPokemonProb;
 
-        console.log("new pokemon prob = " + getNewPokemonProb)
+        console.log(`exploring... types=${types} isNew=${isNew}`);
 
-        let nr: number = Main.exploreNewPokemon(currLevel, types, currentPokemon, /*can be new?*/Math.random() < getNewPokemonProb);
+        let nr = Main.exploreOldPokemon(currentPokemon, types);
+
+        if (isNew || !nr) {
+            const newNr = Main.exploreNewPokemon(currLevel, types, currentPokemon);
+            if (newNr) nr = newNr;
+        }
 
         if (nr) {
             this.startAddPokemonSequence(nr, pos);
@@ -289,51 +294,61 @@ class Main {
     //     return pokemon[lastIndex].nr;
     // }
 
-    static exploreNewPokemon(level: number, types: Array<PokeType>, current: Array<PokemonShort>, canBeNew: boolean): number {
-        console.log(`EXPLORING level:${level} types:${types} new:${canBeNew}`);
-        const allPossible: Array<number> = [];
-        if (!canBeNew)
-            current.forEach(currPoke => allPossible.push(currPoke.nr));
-        if (canBeNew || allPossible.length === 0)
-            types.forEach(type => StaticData.pokemonsByType[type].forEach(nr => allPossible.push(nr)));
+    static exploreOldPokemon(allOld: Array<PokemonShort>, types: Array<PokeType>): number {
+        const allPossible: Array<PokemonShort> = allOld.filter(x => types.includes(x.type1) || types.includes(x.type2));
+        if (allPossible.length === 0) return undefined;
+        Util.shuffle(allPossible);
+        return Util.randomFromArray(allPossible).nr;
+    }
 
-        if (allPossible.length === 0) return 0;
+    static exploreNewPokemon(level: number, types: Array<PokeType>, current: Array<PokemonShort>): number {
+        let allPossible: Array<number> = [];
+        types.forEach(type => StaticData.pokemonsByType[type].forEach(nr => allPossible.push(nr)));
+
+        allPossible = allPossible.filter(x => {
+            if (current.find(y => y.nr === x)) return false;
+            const preEv = StaticData.prevolutionsByPokemon[x];
+            if ((preEv && preEv > 0 && preEv < x)) return false;
+            return true;
+        });
+
+        if (allPossible.length === 0) return undefined;
 
         allPossible.sort((a, b) => Number(a) - Number(b));
 
-        for (let i = 0; i < allPossible.length; i++) {
-            const nr = allPossible[i];
-            const prevEvNr = StaticData.prevolutionsByPokemon[nr];
-            if (prevEvNr && !current.find(x => x.nr === nr)) {
-                allPossible.splice(i, 1);
-                i--;
-            }
-        }
+        // for (let i = 0; i < allPossible.length; i++) {
+        //     const nr = allPossible[i];
+        //     const prevEvNr = StaticData.prevolutionsByPokemon[nr];
+        //     if (prevEvNr && !current.find(x => x.nr === nr)) {
+        //         allPossible.splice(i, 1);
+        //         i--;
+        //     }
+        // }
 
-        let tries = 0;
-        let nr = 0;
-        while (nr == 0 && tries < 10000) {
-            tries++;
-            let index = 0;
+        // let tries = 0;
+        // let nr = 0;
+        // while (nr == 0 && tries < 10000) {
+        //     tries++;
+        //     let index = 0;
 
-            let skips = Math.floor(Math.abs(Util.gaussianRandom(level, level / 10)));
+        //     let skips = Math.floor(Math.abs(Util.gaussianRandom(level, level / 10)));
 
-            while (skips > 0) {
+        //     while (skips > 0) {
 
-                const numberDiff = allPossible[index + 1] - allPossible[0];
+        //         const numberDiff = allPossible[index + 1] - allPossible[0];
 
-                skips--;
-                const skipProb = this.getSkipProbability(level, skips, numberDiff);
+        //         skips--;
+        //         const skipProb = this.getSkipProbability(level, skips, numberDiff);
 
-                console.log(`SkipProbability(${level}, ${skips}, ${numberDiff}) = ${skipProb}`)
+        //         // console.log(`SkipProbability(${level}, ${skips}, ${numberDiff}) = ${skipProb}`)
 
-                if (Math.random() < skipProb)
-                    index++;
-            }
-            nr = allPossible[Math.min(allPossible.length - 1, index)];
-        }
+        //         if (Math.random() < skipProb)
+        //             index++;
+        //     }
+        //     nr = allPossible[Math.min(allPossible.length - 1, index)];
+        // }
 
-        return nr;
+        return allPossible[0];
 
         // const minNumber = Quests[this.pathPanel.completedPaths - 1]?.exploreNumber ?? 1;
         // const searchLength = Math.floor(Math.abs(this.gaussianRandom(50, 10)));

@@ -20,6 +20,7 @@ class Util {
 
 
     static randomFromArray<T>(arr: Array<T>): T {
+        if (arr.length === 0) return undefined;
         return arr[Math.floor(Math.random() * arr.length)];
     }
 

@@ -342,8 +342,8 @@ function start() {
 }
 var clear, addP, save, explore;
 function test(n, isNew) {
-    for (var i = 0; i < n; i++)
-        console.log(explore(1, ["water"], isNew));
+    // for (let i = 0; i < n; i++)
+    // console.log(explore(1, ["water"], isNew))
 }
 var Main = /** @class */ (function () {
     function Main() {
@@ -394,7 +394,7 @@ var Main = /** @class */ (function () {
         };
         addP = function (a) { return _this.addNewPokemon(a, 100, 100); };
         save = function () { return _this.saveAll(); };
-        explore = function (lvl, types, isnew) { return Main.exploreNewPokemon(lvl, types, _this.pokemon.map(function (x) { return ({ nr: x.nr, type1: x.mainType, type2: x.secondType }); }), isnew); };
+        explore = function (lvl, types) { return Main.exploreNewPokemon(lvl, types, _this.pokemon.map(function (x) { return ({ nr: x.nr, type1: x.mainType, type2: x.secondType }); })); };
     }
     Main.prototype.load = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -454,7 +454,7 @@ var Main = /** @class */ (function () {
                 var evNrs = StaticData.evolutionsByPokemon[pokemon1.nr];
                 if (evNrs !== null && evNrs.length > 0) {
                     var newNr = Util.randomFromArray(evNrs);
-                    console.log("WILL EVOLVE: " + pokemon1.nr + " TO " + newNr);
+                    // console.log("WILL EVOLVE: " + pokemon1.nr + " TO " + newNr);
                     if (newNr > 0) {
                         this.addNewPokemon(newNr, pokemon1.card.x, pokemon1.card.y);
                         this.pokemon.splice(this.pokemon.indexOf(pokemon1), 1);
@@ -529,17 +529,22 @@ var Main = /** @class */ (function () {
         // const currentPokemonWithType = this.pokemon.filter(x => orderedManas.find(({ type }) => type === x.mainType || type === x.secondType));
         // let currentPokemon: Array<PokemonShort> = currentPokemonWithCurrentMana.map(x => ({ nr: x.nr, type1: x.mainType, type2: x.secondType }));
         // currentPokemon = currentPokemon.filter((x, i) => currentPokemon.findIndex(y => y.nr === x.nr) === i);
-        console.log("WILL TRY TO GET A ".concat(types, " POKEMON"));
         var currentPokemon = this.pokemon.filter(function (x) { return types.includes(x.mainType) || types.includes(x.secondType); }).map(function (x) { return ({ nr: x.nr, type1: x.mainType, type2: x.secondType }); });
-        console.log({ currentPokemon: currentPokemon });
         // get new pokemon prob stats:
-        var max = 0.2;
-        var start = 0.3;
-        var growth = 100;
-        var getNewPokemonProb = .2; //(max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
+        // const max = 0.2;
+        // const start = 0.3;
+        // const growth = 100;
+        // const getNewPokemonProb = 1; //(max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
         // const getNewPokemonProb = 1;
-        console.log("new pokemon prob = " + getNewPokemonProb);
-        var nr = Main.exploreNewPokemon(currLevel, types, currentPokemon, /*can be new?*/ Math.random() < getNewPokemonProb);
+        var getNewPokemonProb = this.pathPanel.completedPaths < 10 ? .3 : (this.pathPanel.completedPaths < 20 ? .2 : .1);
+        var isNew = Math.random() < getNewPokemonProb;
+        console.log("exploring... types=".concat(types, " isNew=").concat(isNew));
+        var nr = Main.exploreOldPokemon(currentPokemon, types);
+        if (isNew || !nr) {
+            var newNr = Main.exploreNewPokemon(currLevel, types, currentPokemon);
+            if (newNr)
+                nr = newNr;
+        }
         if (nr) {
             this.startAddPokemonSequence(nr, pos);
             // this.manaPanel.level++;
@@ -594,47 +599,52 @@ var Main = /** @class */ (function () {
     //     }
     //     return pokemon[lastIndex].nr;
     // }
-    Main.exploreNewPokemon = function (level, types, current, canBeNew) {
-        console.log("EXPLORING level:".concat(level, " types:").concat(types, " new:").concat(canBeNew));
-        var allPossible = [];
-        if (!canBeNew)
-            current.forEach(function (currPoke) { return allPossible.push(currPoke.nr); });
-        if (canBeNew || allPossible.length === 0)
-            types.forEach(function (type) { return StaticData.pokemonsByType[type].forEach(function (nr) { return allPossible.push(nr); }); });
+    Main.exploreOldPokemon = function (allOld, types) {
+        var allPossible = allOld.filter(function (x) { return types.includes(x.type1) || types.includes(x.type2); });
         if (allPossible.length === 0)
-            return 0;
+            return undefined;
+        Util.shuffle(allPossible);
+        return Util.randomFromArray(allPossible).nr;
+    };
+    Main.exploreNewPokemon = function (level, types, current) {
+        var allPossible = [];
+        types.forEach(function (type) { return StaticData.pokemonsByType[type].forEach(function (nr) { return allPossible.push(nr); }); });
+        allPossible = allPossible.filter(function (x) {
+            if (current.find(function (y) { return y.nr === x; }))
+                return false;
+            var preEv = StaticData.prevolutionsByPokemon[x];
+            if ((preEv && preEv > 0 && preEv < x))
+                return false;
+            return true;
+        });
+        if (allPossible.length === 0)
+            return undefined;
         allPossible.sort(function (a, b) { return Number(a) - Number(b); });
-        var _loop_1 = function (i) {
-            var nr_1 = allPossible[i];
-            var prevEvNr = StaticData.prevolutionsByPokemon[nr_1];
-            if (prevEvNr && !current.find(function (x) { return x.nr === nr_1; })) {
-                allPossible.splice(i, 1);
-                i--;
-            }
-            out_i_1 = i;
-        };
-        var out_i_1;
-        for (var i = 0; i < allPossible.length; i++) {
-            _loop_1(i);
-            i = out_i_1;
-        }
-        var tries = 0;
-        var nr = 0;
-        while (nr == 0 && tries < 10000) {
-            tries++;
-            var index = 0;
-            var skips = Math.floor(Math.abs(Util.gaussianRandom(level, level / 10)));
-            while (skips > 0) {
-                var numberDiff = allPossible[index + 1] - allPossible[0];
-                skips--;
-                var skipProb = this.getSkipProbability(level, skips, numberDiff);
-                console.log("SkipProbability(".concat(level, ", ").concat(skips, ", ").concat(numberDiff, ") = ").concat(skipProb));
-                if (Math.random() < skipProb)
-                    index++;
-            }
-            nr = allPossible[Math.min(allPossible.length - 1, index)];
-        }
-        return nr;
+        // for (let i = 0; i < allPossible.length; i++) {
+        //     const nr = allPossible[i];
+        //     const prevEvNr = StaticData.prevolutionsByPokemon[nr];
+        //     if (prevEvNr && !current.find(x => x.nr === nr)) {
+        //         allPossible.splice(i, 1);
+        //         i--;
+        //     }
+        // }
+        // let tries = 0;
+        // let nr = 0;
+        // while (nr == 0 && tries < 10000) {
+        //     tries++;
+        //     let index = 0;
+        //     let skips = Math.floor(Math.abs(Util.gaussianRandom(level, level / 10)));
+        //     while (skips > 0) {
+        //         const numberDiff = allPossible[index + 1] - allPossible[0];
+        //         skips--;
+        //         const skipProb = this.getSkipProbability(level, skips, numberDiff);
+        //         // console.log(`SkipProbability(${level}, ${skips}, ${numberDiff}) = ${skipProb}`)
+        //         if (Math.random() < skipProb)
+        //             index++;
+        //     }
+        //     nr = allPossible[Math.min(allPossible.length - 1, index)];
+        // }
+        return allPossible[0];
         // const minNumber = Quests[this.pathPanel.completedPaths - 1]?.exploreNumber ?? 1;
         // const searchLength = Math.floor(Math.abs(this.gaussianRandom(50, 10)));
         // console.log({ minNumber, searchLength });
@@ -1307,7 +1317,7 @@ var Smoke = /** @class */ (function () {
         smoke.css("left", pos.left);
         smoke.css("top", pos.top);
         $("body").append(smoke);
-        var _loop_2 = function (i) {
+        var _loop_1 = function (i) {
             setTimeout(function () {
                 if (i >= Smoke.smokeFrames.length)
                     smoke.remove();
@@ -1317,7 +1327,7 @@ var Smoke = /** @class */ (function () {
         };
         var this_1 = this;
         for (var i = 0; i <= Smoke.smokeFrames.length; i++) {
-            _loop_2(i);
+            _loop_1(i);
         }
     };
     Smoke.frameLenght = 40;
@@ -1522,6 +1532,8 @@ var Util = /** @class */ (function () {
         return array;
     };
     Util.randomFromArray = function (arr) {
+        if (arr.length === 0)
+            return undefined;
         return arr[Math.floor(Math.random() * arr.length)];
     };
     Util.containsAny = function (arr1, arr2) {
