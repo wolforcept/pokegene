@@ -362,6 +362,50 @@ body.starting {
   height: 64px;
 }
 
+#filterPanelWrapper {
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  z-index: 999999;
+  pointer-events: none;
+}
+
+#filterPanel {
+  display: grid;
+  --gridSize: 36px;
+  grid-template-columns: var(--gridSize) var(--gridSize) var(--gridSize) var(--gridSize) var(--gridSize) var(--gridSize) var(--gridSize) var(--gridSize) var(--gridSize) var(--gridSize);
+  grid-template-rows: var(--gridSize) var(--gridSize);
+  gap: 5px;
+}
+#filterPanel .filterArrow,
+#filterPanel .listItem {
+  background-color: rgb(43, 43, 43);
+  padding: 2px;
+  border-radius: 10px;
+  pointer-events: all;
+}
+#filterPanel .filterArrow img,
+#filterPanel .listItem img {
+  width: 32px;
+}
+#filterPanel .filterArrow.off,
+#filterPanel .listItem.off {
+  opacity: 20%;
+}
+#filterPanel .filterArrow {
+  grid-row: 2;
+  grid-column: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#filterPanel .filterArrow img {
+  width: 22px;
+  opacity: 90%;
+}
 #manaDisplay {
   width: -moz-fit-content;
   width: fit-content;
@@ -403,6 +447,7 @@ body.starting {
   align-content: flex-start;
 }
 
+/* ANIMATIONS */
 .anim_manaGain {
   width: 64px;
   position: absolute;
@@ -411,7 +456,6 @@ body.starting {
   pointer-events: none;
 }
 
-/* ANIMATIONS */
 .smoke {
   z-index: 9999999;
   position: absolute;

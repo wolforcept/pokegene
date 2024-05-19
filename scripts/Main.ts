@@ -20,6 +20,7 @@ class Main {
     pokedex: Array<boolean> = [];
     // manaPanel: ManaPanel;
     pathPanel: PathPanel;
+    filterPanel: FilterPanel;
     increaseInFindingNewPokemon = 0;
     lockType: LockType = 'none';
 
@@ -161,6 +162,9 @@ class Main {
         this.pathPanel.init();
         this.pathPanel.update();
 
+        this.filterPanel = new FilterPanel();
+        this.filterPanel.init();
+
         this.stepperId = setInterval(() => this.step(), 250);
 
         // explore();
@@ -224,7 +228,14 @@ class Main {
         // const growth = 100;
         // const getNewPokemonProb = 1; //(max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
         // const getNewPokemonProb = 1;
-        const getNewPokemonProb = this.pathPanel.completedPaths < 10 ? .3 : (this.pathPanel.completedPaths < 20 ? .2 : .1);
+        const getNewPokemonProb =
+            this.pathPanel.completedPaths < 10 ? .3 : (
+                this.pathPanel.completedPaths < 20 ? .2 : (
+                    this.pathPanel.completedPaths < 30 ? .1 : (
+                        this.pathPanel.completedPaths < 50 ? .05 : .02
+                    )
+                )
+            );
         const isNew = Math.random() < getNewPokemonProb;
 
         console.log(`exploring... types=${types} isNew=${isNew}`);

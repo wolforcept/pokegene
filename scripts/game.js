@@ -337,6 +337,86 @@ var replaceables = [
     { replace: "{city}", arr: cityAffixes },
     { replace: "{mt}", arr: mountainAffixes },
 ];
+var FilterPanel = /** @class */ (function () {
+    function FilterPanel() {
+    }
+    FilterPanel.prototype.init = function () {
+        var _this = this;
+        this.div = $("<div id=\"filterPanel\"></div>");
+        var button = $("<div class=\"button\"></div>");
+        // const content = $(`<div class="filters"></div>`);
+        PokeTypes.forEach(function (type, i) {
+            var butt = $("<div class=\"listItem filter ".concat(type, "\"><img src=\"assets/types/").concat(type, ".png\"></div>"));
+            var lastClick = 0;
+            butt.on('click', function () {
+                var now = Date.now();
+                if (now - lastClick < 250) {
+                    // $('.filter').addClass('off');
+                    // butt.removeClass('off');
+                    PokeTypes.forEach(function (t) { return _this.toggle(t, false); });
+                    _this.toggle(type, true);
+                }
+                else {
+                    // if (butt.hasClass('off')) {
+                    // butt.removeClass('off');
+                    _this.toggle(type, butt.hasClass('off'));
+                    // } else {
+                    // butt.addClass('off');
+                    // this.toggle(type, false)
+                    // }
+                }
+                lastClick = now;
+            });
+            _this.div.append(butt);
+            if (i == 8) { // all on
+                var butt_1 = $("<div class=\"listItem\"><img src=\"assets/types/any.png\"></div>");
+                butt_1.on('click', function () {
+                    var willBe = butt_1.hasClass('off');
+                    if (willBe)
+                        butt_1.removeClass('off');
+                    else
+                        butt_1.addClass('off');
+                    PokeTypes.forEach(function (t) { return _this.toggle(t, willBe); });
+                });
+                _this.div.append(butt_1);
+            }
+        });
+        // all off
+        var filtersAreVisible = true;
+        var butt = $("<div class=\"filterArrow\"><img class=\"arrowLeft\" src=\"assets/ui/arrow_left.svg\"><img class=\"arrowRight\" src=\"assets/ui/arrow_right.svg\"></div>");
+        butt.on('click', function () {
+            filtersAreVisible = !filtersAreVisible;
+            if (filtersAreVisible) {
+                $('.listItem').show();
+                $(".arrowLeft").hide();
+                $(".arrowRight").show();
+            }
+            else {
+                $('.listItem').hide();
+                $(".arrowLeft").show();
+                $(".arrowRight").hide();
+            }
+        });
+        this.div.append(butt);
+        setTimeout(function () {
+            $(".arrowLeft").hide();
+        }, 200);
+        var wrapper = $("<div id=\"filterPanelWrapper\"></div>");
+        wrapper.append(this.div);
+        $("body").append(wrapper);
+    };
+    FilterPanel.prototype.toggle = function (type, isVisible) {
+        if (isVisible) {
+            $(".pokemon.".concat(type)).show();
+            $(".filter.".concat(type)).removeClass('off');
+        }
+        else {
+            $(".pokemon.".concat(type)).hide();
+            $(".filter.".concat(type)).addClass('off');
+        }
+    };
+    return FilterPanel;
+}());
 function start() {
     new Main();
 }
@@ -499,6 +579,8 @@ var Main = /** @class */ (function () {
                         this.pathPanel = new PathPanel(this, loadedData);
                         this.pathPanel.init();
                         this.pathPanel.update();
+                        this.filterPanel = new FilterPanel();
+                        this.filterPanel.init();
                         this.stepperId = setInterval(function () { return _this.step(); }, 250);
                         return [2 /*return*/];
                 }
@@ -536,7 +618,7 @@ var Main = /** @class */ (function () {
         // const growth = 100;
         // const getNewPokemonProb = 1; //(max - ((max - start) * (growth / (growth + currLevel)))); // from 0.3 at level==0 to 0.25 at level == 100
         // const getNewPokemonProb = 1;
-        var getNewPokemonProb = this.pathPanel.completedPaths < 10 ? .3 : (this.pathPanel.completedPaths < 20 ? .2 : .1);
+        var getNewPokemonProb = this.pathPanel.completedPaths < 10 ? .3 : (this.pathPanel.completedPaths < 20 ? .2 : (this.pathPanel.completedPaths < 30 ? .1 : (this.pathPanel.completedPaths < 50 ? .05 : .02)));
         var isNew = Math.random() < getNewPokemonProb;
         console.log("exploring... types=".concat(types, " isNew=").concat(isNew));
         var nr = Main.exploreOldPokemon(currentPokemon, types);
@@ -978,7 +1060,7 @@ var PokeCard = /** @class */ (function () {
         var _this = this;
         var _a;
         var pokemon = this.pokemon;
-        this.div = $("<div class=\"pokemon ".concat(pokemon.mainType === 'ghost' || pokemon.secondType === 'ghost' ? "ghost" : "", " ").concat(this.isOpened ? "" : "closed", " ").concat(this.isBall ? "" : "showExtraInfo", "\"></div>"));
+        this.div = $("<div class=\"pokemon ".concat(pokemon.mainType, " ").concat(pokemon.secondType, " ").concat(pokemon.mainType === 'ghost' || pokemon.secondType === 'ghost' ? "ghost" : "", " ").concat(this.isOpened ? "" : "closed", " ").concat(this.isBall ? "" : "showExtraInfo", "\"></div>"));
         var div = this.div;
         // div.css('background-color', "#" + Colors[pokemon.mainType][0]);
         div.attr('id', this.id);

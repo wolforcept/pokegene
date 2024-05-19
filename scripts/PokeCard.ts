@@ -42,7 +42,7 @@ class PokeCard {
 
     init() {
         const pokemon = this.pokemon;
-        this.div = $(`<div class="pokemon ${pokemon.mainType === 'ghost' || pokemon.secondType === 'ghost' ? "ghost" : ""} ${this.isOpened ? "" : "closed"} ${this.isBall ? "" : "showExtraInfo"}"></div>`);
+        this.div = $(`<div class="pokemon ${pokemon.mainType} ${pokemon.secondType} ${pokemon.mainType === 'ghost' || pokemon.secondType === 'ghost' ? "ghost" : ""} ${this.isOpened ? "" : "closed"} ${this.isBall ? "" : "showExtraInfo"}"></div>`);
         const div = this.div;
 
         // div.css('background-color', "#" + Colors[pokemon.mainType][0]);
