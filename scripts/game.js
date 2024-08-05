@@ -530,7 +530,7 @@ var Main = /** @class */ (function () {
     Main.prototype.joinPokemon = function (pokemon1, id2) {
         var pokemon2 = this.pokemon.find(function (x) { return x.card.id === id2; });
         if (pokemon1 && pokemon2 && pokemon1.nr === pokemon2.nr && pokemon1.level === pokemon2.level && pokemon1.card.isOpened && pokemon2.card.isOpened) {
-            if (pokemon1.level === 10) {
+            if (pokemon1.level >= 10) {
                 var evNrs = StaticData.evolutionsByPokemon[pokemon1.nr];
                 if (evNrs !== null && evNrs.length > 0) {
                     var newNr = Util.randomFromArray(evNrs);
@@ -548,7 +548,7 @@ var Main = /** @class */ (function () {
             // pokemon2.remove();
             this.pokemon.splice(this.pokemon.indexOf(pokemon2), 1);
             pokemon2.card.remove();
-            pokemon1.level++;
+            pokemon1.level+=3;
             pokemon1.timer = pokemon1.maxTimer;
             pokemon1.card.animTempGrow();
             pokemon1.card.updateStars();
