@@ -38,8 +38,8 @@ var levelStars = [
     [],
     [], // level 1 <- starting level
     /*2*/ ["bronze"],
-    /*3*/ ["bronze", "bronze"],
-    /*4*/ ["bronze", "bronze", "bronze"],
+    /*3*/ ["silver"],
+    /*4*/ ["gold"],
     /*5*/ ["silver"],
     /*6*/ ["silver", "silver"],
     /*7*/ ["silver", "silver", "silver"],
@@ -530,7 +530,7 @@ var Main = /** @class */ (function () {
     Main.prototype.joinPokemon = function (pokemon1, id2) {
         var pokemon2 = this.pokemon.find(function (x) { return x.card.id === id2; });
         if (pokemon1 && pokemon2 && pokemon1.nr === pokemon2.nr && pokemon1.level === pokemon2.level && pokemon1.card.isOpened && pokemon2.card.isOpened) {
-            if (pokemon1.level >= 10) {
+            if (pokemon1.level >= 4) {
                 var evNrs = StaticData.evolutionsByPokemon[pokemon1.nr];
                 if (evNrs !== null && evNrs.length > 0) {
                     var newNr = Util.randomFromArray(evNrs);
@@ -548,7 +548,7 @@ var Main = /** @class */ (function () {
             // pokemon2.remove();
             this.pokemon.splice(this.pokemon.indexOf(pokemon2), 1);
             pokemon2.card.remove();
-            pokemon1.level+=3;
+            pokemon1.level++;
             pokemon1.timer = pokemon1.maxTimer;
             pokemon1.card.animTempGrow();
             pokemon1.card.updateStars();
@@ -1266,14 +1266,8 @@ var Pokemon = /** @class */ (function () {
         get: function () {
             switch (this.level) {
                 case 2: return "Bronze 1";
-                case 3: return "Bronze 2";
-                case 4: return "Bronze 3";
-                case 5: return "Silver 1";
-                case 6: return "Silver 2";
-                case 7: return "Silver 3";
-                case 8: return "Gold 1";
-                case 9: return "Gold 2";
-                case 10: return "Gold 3";
+                case 3: return "Silver 1";
+                case 4: return "Gold 1";
                 default: return "";
             }
         },
